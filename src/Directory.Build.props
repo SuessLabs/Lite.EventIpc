@@ -4,7 +4,7 @@
     <LangVersion>latest</LangVersion>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 
-    <BaseOutputPath>..\output\$(MSBuildProjectName)</BaseOutputPath>
+    <BaseOutputPath>../../output/$(MSBuildProjectName)</BaseOutputPath>
     <Deterministic>true</Deterministic>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>

@@ -42,6 +42,14 @@ If you store strong references to handlers, subscribers will never be collected.
 
 ## History
 
+### v0.7.0
+
+Adds optional IPC transport mechanisms for inter-process communication (IPC) with **JSON serialization**. IPC can be integrated with the `IEventTransport` interface.
+
+* **Named Pipe** Transport
+* **Memory-Mapped File** Transport (_Windows OS only_)
+* **TCP/IP** Transport
+
 ### v0.6.0
 
 * Uses **weak references** to avoid memory leaks

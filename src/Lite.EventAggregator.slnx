@@ -10,7 +10,10 @@
     <File Path="global.json" />
     <File Path="stylecop.json" />
   </Folder>
-  <Folder Name="/Tests/">
+  <Folder Name="/Test Apps/">
+    <Project Path="SampleApp/SampleApp.csproj" Id="0c7214b2-3dc4-46b2-972b-71ad5c93eafc" />
+  </Folder>
+  <Folder Name="/Unit Tests/">
     <Project Path="Lite.EventAggregator.Tests/Lite.EventAggregator.Tests.csproj" Id="64fa2510-d0b7-4118-af16-79c95ee5fd0a" />
   </Folder>
   <Project Path="Lite.EventAggregator/Lite.EventAggregator.csproj" />

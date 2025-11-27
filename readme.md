@@ -10,6 +10,14 @@ This implementation is features:
 * Uses **weak references** to avoid memory leaks
 * Cleans up dead references during `Publish`.
 * Prevents memory leaks when subscribers are no longer needed.
+* DI-friendly with extensions and hosted service
+* Optional IPC transport mechanisms for inter-process communication (IPC) with **JSON serialization**:
+  * Named Pipe Transport
+  * Memory-Mapped File Transport (_Windows OS only_)
+  * TCP/IP Transport
+* 2 types of IPC communication:
+  * One-way publish/subscribe (`IEventTransport`)
+  * Bidirectional request/response with timeouts (`IEventEnvelopeTransport`)
 
 ## Usage
 
@@ -41,6 +49,11 @@ static void Main()
 If you store strong references to handlers, subscribers will never be collected. Using `WeakReference` ensures that if the subscriber is no longer needed, it can be GC'd.
 
 ## History
+
+### v1.0.0
+
+* Removed relyance on reflection
+* IPC Transport timeouts for 'Envelope' (receipted) messages
 
 ### v0.9.0
 
@@ -96,7 +109,7 @@ This design preserves your weak-reference handlers, remains DI-friendly, and kee
 
 ### v0.7.0
 
-Adds optional IPC transport mechanisms for inter-process communication (IPC) with **JSON serialization**. IPC can be integrated with the `IEventTransport` interface.
+Adds optional (one-way) IPC transport mechanisms for inter-process communication (IPC) with **JSON serialization**. IPC can be integrated with the `IEventTransport` interface.
 
 * **Named Pipe** Transport
 * **Memory-Mapped File** Transport (_Windows OS only_)
@@ -115,5 +128,5 @@ Adds optional IPC transport mechanisms for inter-process communication (IPC) wit
 
 ## Future Considerations
 
-* **Async** support for event handling.
+* Send IPC only for specified event types.
 * Possibly, filtering or priority-based dispatching.

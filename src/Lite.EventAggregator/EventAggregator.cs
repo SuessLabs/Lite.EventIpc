@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Lite.EventAggregator.Core;
+using Lite.EventAggregator.Transporter;
 
 namespace Lite.EventAggregator;
 

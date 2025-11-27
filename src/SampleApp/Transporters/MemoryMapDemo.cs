@@ -26,7 +26,7 @@ public class MemoryMapDemo
 
     serverAgg.SubscribeRequest<Ping, Pong>(req => Task.FromResult(new Pong(req.Message + " handled by mmf")));
 
-    await clientAgg.PublishEnvelopeAsync(new Ping("publish via mmf"));
+    await clientAgg.PublishAsync(new Ping("publish via mmf"));
     var resp = await clientAgg.RequestAsync<Ping, Pong>(new Ping("request via mmf"));
     Console.WriteLine($"[Client] Response: {resp.Message}");
   }

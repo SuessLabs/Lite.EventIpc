@@ -34,7 +34,7 @@ public class TcpDemo
 
     serverAgg.SubscribeRequest<Ping, Pong>(req => Task.FromResult(new Pong(req.Message + " handled by tcp")));
 
-    await clientAgg.PublishEnvelopeAsync(new Ping("publish via tcp"));
+    await clientAgg.PublishAsync(new Ping("publish via tcp"));
     var resp = await clientAgg.RequestAsync<Ping, Pong>(new Ping("request via tcp"));
     Console.WriteLine($"[Client] Response: {resp.Message}");
   }

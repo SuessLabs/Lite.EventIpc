@@ -25,7 +25,7 @@ public class NamedPipesDemo
     serverAgg.Subscribe<Ping>(p => Console.WriteLine($"[Server] Publish: {p.Message}"));
     serverAgg.SubscribeRequest<Ping, Pong>(req => Task.FromResult(new Pong(req.Message + " handled by server")));
 
-    await clientAgg.PublishEnvelopeAsync(new Ping("publish via pipes"));
+    await clientAgg.PublishAsync(new Ping("publish via pipes"));
     var resp = await clientAgg.RequestAsync<Ping, Pong>(new Ping("request via pipes"));
     Console.WriteLine($"[Client] Response: {resp.Message}");
   }

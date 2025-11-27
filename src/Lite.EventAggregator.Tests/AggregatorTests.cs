@@ -23,7 +23,7 @@ public class AggregatorTests
     agg.Subscribe<Ping>(p => seen = p.Message);
 
     await agg.PublishAsync(new Ping("hello"));
-    Assert.Equal("hello", seen);
+    Assert.AreEqual("hello", seen);
   }
 
   [TestMethod]

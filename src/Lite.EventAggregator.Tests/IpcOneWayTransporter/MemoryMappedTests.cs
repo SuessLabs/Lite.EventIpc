@@ -3,6 +3,8 @@
 
 using System;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
+using Lite.EventAggregator.Tests.Models;
 using Lite.EventAggregator.Transporter;
 
 namespace Lite.EventAggregator.Tests.IpcOneWayTransporter;
@@ -14,18 +16,23 @@ public class MemoryMappedTests : BaseTestClass
   [TestMethod]
   public void OneWayMemoryMapTest()
   {
+    const string ExpectedUserName = "Hello";
+
     var server = new MemoryMappedTransport("map-name");
     var client = new MemoryMappedTransport("map-name");
 
     bool msgReceived = false;
 
-    server.StartListening<string>(message =>
+    server.StartListening<UserCreatedEvent>(evt =>
     {
-      Assert.AreEqual("Hello, Memory Mapped!", message);
+      Assert.AreEqual(ExpectedUserName, evt.UserName);
       msgReceived = true;
     });
 
-    client.Send(new string("Hello, Memory Mapped!"));
+    client.Send(new UserCreatedEvent { UserName = ExpectedUserName });
+
+    Task.Delay(10000).Wait();
+    server.StopListening();
 
     Assert.IsTrue(msgReceived);
   }

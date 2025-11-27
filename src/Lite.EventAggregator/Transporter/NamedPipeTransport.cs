@@ -42,4 +42,9 @@ public class NamedPipeTransport : IEventTransport
       onEventReceived(evt);
     });
   }
+
+  /// <inheritdoc/>
+  public void StopListening()
+  {
+  }
 }

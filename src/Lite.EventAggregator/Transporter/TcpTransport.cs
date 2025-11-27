@@ -54,4 +54,9 @@ public class TcpTransport : IEventTransport
       }
     });
   }
+
+  /// <inheritdoc/>
+  public void StopListening()
+  {
+  }
 }

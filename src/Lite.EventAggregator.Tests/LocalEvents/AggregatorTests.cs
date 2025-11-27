@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Lite.EventAggregator.Tests.Models;
 
-namespace Lite.EventAggregator.Tests.EventAggr;
+namespace Lite.EventAggregator.Tests.LocalEvents;
 
 [TestClass]
 public class AggregatorTests

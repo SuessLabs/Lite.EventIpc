@@ -4,7 +4,7 @@
 using System;
 using Lite.EventAggregator.Tests.Models;
 
-namespace Lite.EventAggregator.Tests;
+namespace Lite.EventAggregator.Tests.LocalEvents;
 
 [TestClass]
 public class WeakReferenceTests

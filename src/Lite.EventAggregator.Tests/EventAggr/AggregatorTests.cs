@@ -68,8 +68,7 @@ public class AggregatorTests
   public async Task RequestWithoutTimeoutsTrowsAsync()
   {
     // Use case:
-    //  There is no subscription found so if falls through
-    //  This is usually reserved for an IPC receipted event (`_ipcEnvelopeTransport`)
+    //  There is no local subscription, no IPC, or timeout assigned
     var agg = new EventAggregator();
     await Assert.ThrowsAsync<TimeoutException>(async () =>
         await agg.RequestAsync<Ping, Pong>(

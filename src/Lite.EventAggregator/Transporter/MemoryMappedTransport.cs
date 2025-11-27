@@ -43,7 +43,8 @@ public class MemoryMappedTransport : IEventTransport
     // Poll memory-mapped file for changes
     Task.Run(() =>
     {
-      using var mmf = MemoryMappedFile.OpenExisting(_mapName);
+      using var mmf = MemoryMappedFile.CreateOrOpen(_mapName, BufferSize);
+      ////using var mmf = MemoryMappedFile.OpenExisting(_mapName);
       using var accessor = mmf.CreateViewAccessor();
       var bytes = new byte[BufferSize];
       accessor.ReadArray(0, bytes, 0, bytes.Length);

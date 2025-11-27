@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Lite.EventAggregator.Tests.Models;
 using Lite.EventAggregator.Transporter;
 
-namespace Lite.EventAggregator.Tests.IpcTransporters;
+namespace Lite.EventAggregator.Tests.IpcReceiptedTransporters;
 
 [TestClass]
 public class NamedPipesTests : BaseTestClass

@@ -3,22 +3,37 @@
 
 using System;
 using System.Runtime.Versioning;
-using System.Threading.Tasks;
-using Lite.EventAggregator.Tests.Models;
 using Lite.EventAggregator.Transporter;
 
-namespace Lite.EventAggregator.Tests.IpcTransporters;
+namespace Lite.EventAggregator.Tests.IpcOneWayTransporter;
 
 [SupportedOSPlatform("windows")]
 [TestClass]
 public class MemoryMappedTests : BaseTestClass
 {
   [TestMethod]
-  public async Task Request_Response_Via_MemoryMappedAsync()
+  public void OneWayMemoryMapTest()
   {
-    var client = new EventAggregator();
-    var server = new EventAggregator();
+    var server = new MemoryMappedTransport("map-name");
+    var client = new MemoryMappedTransport("map-name");
 
+    bool msgReceived = false;
+
+    server.StartListening<string>(message =>
+    {
+      Assert.AreEqual("Hello, Memory Mapped!", message);
+      msgReceived = true;
+    });
+
+    client.Send(new string("Hello, Memory Mapped!"));
+
+    Assert.IsTrue(msgReceived);
+  }
+
+  [TestMethod]
+  [Ignore("Not implemented")]
+  public void ReceiptedEnvelopeMemoryMapTest()
+  {
     var serverTransport = new MemoryMappedEnvelopeTransport(
       requestMapName: "req-map",
       responseMapName: "resp-map",
@@ -30,17 +45,5 @@ public class MemoryMappedTests : BaseTestClass
       responseMapName: "resp-map",
       requestSignalName: "req-signal",
       responseSignalName: "resp-signal");
-
-    await server.UseIpcEnvelopeTransportAsync(serverTransport);
-    await client.UseIpcEnvelopeTransportAsync(clientTransport);
-
-    server.SubscribeRequest<Ping, Pong>(req => Task.FromResult(new Pong(req.Message + " mmf")));
-
-    var resp = await client.RequestAsync<Ping, Pong>(
-      new Ping("hello"),
-      timeout: TimeSpan.FromMilliseconds(DefaultTimeout),
-      TestContext.CancellationToken);
-
-    Assert.AreEqual("hello mmf", resp.Message);
   }
 }

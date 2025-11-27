@@ -31,8 +31,8 @@ public class MemoryMappedTests : BaseTestClass
 
     client.Send(new UserCreatedEvent { UserName = ExpectedUserName });
 
-    Task.Delay(10000).Wait();
-    server.StopListening();
+    // Give it a moment
+    Task.Delay(10).Wait();
 
     Assert.IsTrue(msgReceived);
   }

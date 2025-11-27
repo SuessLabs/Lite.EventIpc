@@ -57,7 +57,7 @@ public class MemoryMappedTransport : IEventTransport
         var length = accessor.ReadInt32(0);
 
         if (length <= 0)
-          return;
+          continue;
 
         var bytes = new byte[BufferSize];
         accessor.ReadArray(0, bytes, 0, bytes.Length);

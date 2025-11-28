@@ -11,10 +11,16 @@ namespace Lite.EventAggregator.Tests.IpcOneWayTransporter;
 [TestClass]
 public class TcpTransportTests : BaseTestClass
 {
-  private const int ReplyListenPort = 6004;
-  private const int ReplySendPort = 6002;
-  private const int RequestListenPort = 6003;
   private const int RequestSendPort = 6001;
+
+  private string _msgPayload = "hello";
+  private bool _msgReceived = false;
+
+  [TestInitialize]
+  public void CleanupTestInitialize()
+  {
+    _msgReceived = false;
+  }
 
   [TestMethod]
   public void OneWayTcpIpcTransportTest()
@@ -44,9 +50,6 @@ public class TcpTransportTests : BaseTestClass
   [Ignore("This methodogoly is not implemented yet.")]
   public void VNextTcpTransportTest()
   {
-    var msgPayload = "hello";
-    var msgReceived = false;
-
     var server = new EventAggregator();
     var client = new EventAggregator();
 
@@ -59,15 +62,15 @@ public class TcpTransportTests : BaseTestClass
     // Server listener
     server.Subscribe<Ping>(req =>
     {
-      if (req.Message == msgPayload)
-        msgReceived = true;
+      if (req.Message == _msgPayload)
+        _msgReceived = true;
     });
 
     // Client sender
-    client.Publish(new Ping(msgPayload));
+    client.Publish(new Ping(_msgPayload));
 
     // Give it a moment
     Task.Delay(DefaultTimeout).Wait();
-    Assert.IsTrue(msgReceived);
+    Assert.IsTrue(_msgReceived);
   }
 }

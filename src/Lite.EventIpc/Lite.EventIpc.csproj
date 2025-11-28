@@ -36,4 +36,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <Folder Include="IpcReceiptTransport\" />
+  </ItemGroup>
+
 </Project>

@@ -4,8 +4,8 @@
 
 using System;
 using System.Threading.Tasks;
+using Lite.EventAggregator.IpcReceiptTransport;
 using Lite.EventAggregator.Tests.Models;
-using Lite.EventAggregator.IpcTransport;
 
 namespace Lite.EventAggregator.Tests.IpcReceiptedTransporters;
 
@@ -42,4 +42,5 @@ public class NamedPipesTests : BaseTestClass
     Assert.AreEqual("hello server", resp.Message);
   }
 }
+
 #endif

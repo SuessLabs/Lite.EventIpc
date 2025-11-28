@@ -11,7 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Lite.EventAggregator.IpcTransport;
+namespace Lite.EventAggregator.IpcReceiptTransport;
 
 /// <summary>Memory-Mapped IPC Transport - Async + Bi-Directional (Windows OS only).</summary>
 /// <remarks>
@@ -25,6 +25,7 @@ public class MemoryMappedEnvelopeTransport : IEventEnvelopeTransport
 {
   /// <summary>1MB buffer for beta.</summary>
   private const int DefaultBufferSize = 1 << 20;
+
   private const int LengthPrefixSize = 4;
 
   private readonly int _bufferSize;
@@ -119,4 +120,5 @@ public class MemoryMappedEnvelopeTransport : IEventEnvelopeTransport
     }
   }
 }
+
 #endif

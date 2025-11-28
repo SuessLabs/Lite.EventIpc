@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Lite.EventAggregator.IpcTransport;
+namespace Lite.EventAggregator.IpcReceiptTransport;
 
 /// <summary>
 ///   Provides an async + bi-directional event envelope transport mechanism
@@ -159,4 +159,5 @@ public class NamedPipeEnvelopeTransport : IEventEnvelopeTransport
     await stream.WriteAsync(payload.AsMemory(), ct);
   }
 }
+
 #endif

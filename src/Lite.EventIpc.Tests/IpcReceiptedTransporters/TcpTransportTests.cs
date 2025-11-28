@@ -5,8 +5,8 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using Lite.EventAggregator.IpcReceiptTransport;
 using Lite.EventAggregator.Tests.Models;
-using Lite.EventAggregator.IpcTransport;
 
 namespace Lite.EventAggregator.Tests.IpcReceiptedTransporters;
 
@@ -46,4 +46,5 @@ public class TcpTransportTests : BaseTestClass
     Assert.AreEqual("hello tcp", resp.Message);
   }
 }
+
 #endif

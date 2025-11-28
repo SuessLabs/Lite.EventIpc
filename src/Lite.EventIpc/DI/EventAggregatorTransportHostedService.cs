@@ -4,6 +4,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Lite.EventAggregator.IpcReceiptTransport;
 using Lite.EventAggregator.IpcTransport;
 using Microsoft.Extensions.Hosting;
 
@@ -26,4 +27,5 @@ public sealed class EventAggregatorTransportHostedService : IHostedService
 
   public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
+
 #endif

@@ -6,7 +6,7 @@ using System;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Lite.EventAggregator;
-using Lite.EventAggregator.IpcTransport;
+using Lite.EventAggregator.IpcReceiptTransport;
 
 namespace SampleApp.IpcTransporters;
 
@@ -36,4 +36,5 @@ public class MemoryMapDemo
 
   public record Pong(string Message);
 }
+
 #endif

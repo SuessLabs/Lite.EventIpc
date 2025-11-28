@@ -4,7 +4,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Lite.EventAggregator.Transporter;
+using Lite.EventAggregator.IpcTransport;
 using Microsoft.Extensions.Hosting;
 
 namespace Lite.EventAggregator;

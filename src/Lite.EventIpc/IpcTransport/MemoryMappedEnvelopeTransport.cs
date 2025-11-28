@@ -11,7 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Lite.EventAggregator.Transporter;
+namespace Lite.EventAggregator.IpcTransport;
 
 /// <summary>Memory-Mapped IPC Transport - Async + Bi-Directional (Windows OS only).</summary>
 /// <remarks>

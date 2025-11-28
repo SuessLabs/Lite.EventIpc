@@ -1,7 +1,7 @@
 // Copyright Xeno Innovations, Inc. 2025
 // See the LICENSE file in the project root for more information.
 #if PREVIEW
-using Lite.EventAggregator.Transporter;
+using Lite.EventAggregator.IpcTransport;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Lite.EventAggregator.Extensions;

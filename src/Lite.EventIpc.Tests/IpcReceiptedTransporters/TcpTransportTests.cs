@@ -6,7 +6,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Lite.EventAggregator.Tests.Models;
-using Lite.EventAggregator.Transporter;
+using Lite.EventAggregator.IpcTransport;
 
 namespace Lite.EventAggregator.Tests.IpcReceiptedTransporters;
 

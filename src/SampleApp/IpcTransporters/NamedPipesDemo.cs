@@ -5,9 +5,9 @@
 using System;
 using System.Threading.Tasks;
 using Lite.EventAggregator;
-using Lite.EventAggregator.Transporter;
+using Lite.EventAggregator.IpcTransport;
 
-namespace SampleApp.Transporters;
+namespace SampleApp.IpcTransporters;
 
 public class NamedPipesDemo
 {

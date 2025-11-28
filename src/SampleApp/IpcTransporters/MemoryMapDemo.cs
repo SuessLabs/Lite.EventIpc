@@ -6,9 +6,9 @@ using System;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Lite.EventAggregator;
-using Lite.EventAggregator.Transporter;
+using Lite.EventAggregator.IpcTransport;
 
-namespace SampleApp.Transporters;
+namespace SampleApp.IpcTransporters;
 
 [SupportedOSPlatform("windows")]
 public class MemoryMapDemo

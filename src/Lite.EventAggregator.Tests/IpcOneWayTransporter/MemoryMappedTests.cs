@@ -13,13 +13,15 @@ namespace Lite.EventAggregator.Tests.IpcOneWayTransporter;
 [TestClass]
 public class MemoryMappedTests : BaseTestClass
 {
+  private const string MapName = "test-map";
+
   [TestMethod]
   public void OneWayMemoryMapTest()
   {
     const string ExpectedUserName = "Hello";
 
-    var server = new MemoryMappedTransport("map-name");
-    var client = new MemoryMappedTransport("map-name");
+    var server = new MemoryMappedTransport(MapName);
+    var client = new MemoryMappedTransport(MapName);
 
     bool msgReceived = false;
 
@@ -32,25 +34,29 @@ public class MemoryMappedTests : BaseTestClass
     client.Send(new UserCreatedEvent { UserName = ExpectedUserName });
 
     // Give it a moment
-    Task.Delay(10).Wait();
-
+    Task.Delay(5).Wait();
     Assert.IsTrue(msgReceived);
   }
 
   [TestMethod]
-  [Ignore("Not implemented")]
-  public void ReceiptedEnvelopeMemoryMapTest()
+  public void OneWayMemoryMapCanceledTest()
   {
-    var serverTransport = new MemoryMappedEnvelopeTransport(
-      requestMapName: "req-map",
-      responseMapName: "resp-map",
-      requestSignalName: "req-signal",
-      responseSignalName: "resp-signal");
+    const string ExpectedUserName = "Hello";
 
-    var clientTransport = new MemoryMappedEnvelopeTransport(
-      requestMapName: "req-map",
-      responseMapName: "resp-map",
-      requestSignalName: "req-signal",
-      responseSignalName: "resp-signal");
+    var server = new MemoryMappedTransport(MapName);
+    var client = new MemoryMappedTransport(MapName);
+
+    bool msgReceived = false;
+
+    server.StartListening<UserCreatedEvent>(evt =>
+    {
+      Assert.AreEqual(ExpectedUserName, evt.UserName);
+      msgReceived = true;
+    });
+
+    server.StopListening();
+    client.Send(new UserCreatedEvent { UserName = ExpectedUserName });
+
+    Assert.IsFalse(msgReceived);
   }
 }

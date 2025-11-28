@@ -13,5 +13,7 @@ public class BaseTestClass
   /// <summary>Default timeout.. don't wait too long.</summary>
   public const int DefaultTimeout = 50;
 
+  public const int DefaultTimeout200 = 200;
+
   public TestContext TestContext { get; set; }
 }

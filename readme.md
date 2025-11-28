@@ -54,10 +54,13 @@ If you store strong references to handlers, subscribers will never be collected.
 
 ### v1.0.0
 
-* Removed relyance on reflection
-* IPC Transport timeouts for 'Envelope' (receipted) messages
-* Added ability for local event timeouts.
+* [New] Renamed library to "Lite.EventIpc"
+  * Library includes local Event Aggregator and remote IPC transports
+* [New] Removed relyance on reflection
+* [New] Added ability for local event timeouts.
   * This can happen when there are no subscribers, but you expect there to be one. Previously this was only available for "receipted" IPC transports.
+* [vNext] Receipted IPC Transports bumped to next version (_`IEventEnvelopeTransport` still exists, just not implemented_)
+  * IPC Transport timeouts for 'Envelope' (receipted) messages
 
 ### v0.9.0
 

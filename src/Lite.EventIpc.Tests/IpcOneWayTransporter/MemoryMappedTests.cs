@@ -5,6 +5,7 @@ using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Lite.EventIpc.IpcTransport;
 using Lite.EventIpc.Tests.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Lite.EventIpc.Tests.IpcOneWayTransporter;
 
@@ -13,6 +14,12 @@ namespace Lite.EventIpc.Tests.IpcOneWayTransporter;
 public class MemoryMappedTests : BaseTestClass
 {
   private const string MapName = "test-map";
+
+  [TestInitialize]
+  public void CleanupTestInitialize()
+  {
+    _logger = CreateConsoleLogger<EventAggregator>(LogLevel.Debug);
+  }
 
   [TestMethod]
   public void OneWayMemoryMapCanceledTest()

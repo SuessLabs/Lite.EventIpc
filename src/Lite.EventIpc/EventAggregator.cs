@@ -55,13 +55,15 @@ public class EventAggregator : IEventAggregator
   /// <remarks>A local even can have a RequestAsync timeout, but not an IPC receipted transport.</remarks>
   private bool _usingIpcTransport = false;
 
-  public EventAggregator()
-  {
-    _logger = null;
-    ////_options = options?.Value ?? new LiteEventAggregatorOptions();
-  }
-
-  public EventAggregator(ILogger<EventAggregator> logger)
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="EventAggregator"/> class with optional (DI'able) logger.
+  ///   <![CDATA[
+  ///     services.AddLogging();  // Enables ILogger injection
+  ///     services.AddSingleton<IEventAggregator, EventAggregator>();
+  ///   ]]>
+  /// </summary>
+  /// <param name="logger">Logger.</param>
+  public EventAggregator(ILogger<EventAggregator>? logger = null)
   {
     _logger = logger;
     ////_options = options?.Value ?? new LiteEventAggregatorOptions();
@@ -134,8 +136,10 @@ public class EventAggregator : IEventAggregator
       return (TResponse)r!;
     }
 
-    // No local handler found or timeout, avoids sitting in a black hole
-    // TODO: Consider creating a custom Exception type for this scenario (there's a timeout ex below)
+    // NOTE:
+    //  Because "RequestAsync" wants a response back, we need to inform there isn't a listener.
+    //  No local handler found or timeout, avoids sitting in a black hole
+    // TODO (2025-11-28): Consider creating a "MissingRequestSubscriberException" type for this scenario (there's a timeout ex below)
     if (!_usingIpcTransport && timeout is null)
       throw new TimeoutException("No IPC transport configured for request/response, and no local handler found.");
 

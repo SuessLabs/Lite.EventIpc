@@ -179,8 +179,10 @@ public class EventAggregator : IEventAggregator
       if (_pendingRequests.TryRemove(correlationId, out var pr))
       {
         // TODO (2025-11-28): Fix receipted timeout exception handling. It always throws and fails to cast to TResponse
-        //// pr.Payload.SetResult(pr);
-        pr.Payload.TrySetException(new TimeoutException($"Request timed out after {timeout ?? _defaultTimeout}."));
+        ////pr.Payload.SetResult(pr);
+        ////pr.Payload.TrySetException(new TimeoutException($"Request timed out after {timeout ?? _defaultTimeout}."));
+
+        pr.Payload.SetResult(pr);
 
         if (_logger is not null && _logger.IsEnabled(LogLevel.Warning))
           _logger.LogWarning("Request {CorrelationId} timed out after {Timeout}", correlationId, effectiveTimeout);
@@ -193,6 +195,7 @@ public class EventAggregator : IEventAggregator
 
       // TODO: (2025-11-28): Fix receipted timeout exception handling. It always fails to cast 'PendingRequest' to TResponse
       var obj = await pending.Payload.Task.ConfigureAwait(false);
+      ////object? obj = await pending.Payload.Task; ////.Task.ConfigureAwait(false);
       if (_logger is not null && _logger.IsEnabled(LogLevel.Information))
         _logger.LogInformation("Received response for {CorrelationId}", correlationId);
 
@@ -363,6 +366,7 @@ public class EventAggregator : IEventAggregator
       return;
     }
 
+    // Handle Envelope Response
     if (envelope.IsResponse)
     {
       if (_pendingRequests.TryRemove(envelope.CorrelationId, out var pr))
@@ -396,6 +400,7 @@ public class EventAggregator : IEventAggregator
       return;
     }
 
+    // Handle Envelope Response
     if (envelope.IsRequest)
     {
       var handler = GetFirstRequestHandler(eventType);

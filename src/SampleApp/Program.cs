@@ -21,6 +21,6 @@ public class Program
 
   public class SampleEvent
   {
-    public string Message { get; set; }
+    public string? Message { get; set; }
   }
 }

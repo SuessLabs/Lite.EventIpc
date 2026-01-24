@@ -12,7 +12,7 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages> <!-- Excludes all satellite assemblies -->
 
     <Company>Xeno Innovations, Inc.</Company>
-    <Copyright>Copyright 2025 Xeno Innovations, Inc.</Copyright>
+    <Copyright>Copyright 2025-$([System.DateTime]::Now.ToString(yyyy)) Xeno Innovations, Inc.</Copyright>
     <Authors>Damian Suess</Authors>
   </PropertyGroup>
 

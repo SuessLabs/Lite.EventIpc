@@ -146,7 +146,7 @@ public class EventAggregator : IEventAggregator
     if (_usingIpcTransport && _ipcEnvelopeTransport is null)
       throw new InvalidOperationException("No IPC transport configured for request/response.");
 
-    // Edge case: Timeout response not tested with non-recepted transport
+    // Edge case: Timeout response not tested with non-receipted transport
     // Don't allow it for now
     if (_ipcTransport is not null)
       throw new InvalidOperationException("Non-receipted IPC transports are allowed for request/response.");
@@ -179,9 +179,9 @@ public class EventAggregator : IEventAggregator
       // TODO (2025-11-30) Need to determine if we 'canceled' with success or failed with Timeout
       if (_pendingRequests.TryRemove(correlationId, out var pr))
       {
-        // TODO (2025-11-28): Fix receipted timeout exception handling. It always throws and fails to cast to TResponse
-        pr.Payload.SetResult(pr);
-        ////pr.Payload.TrySetException(new TimeoutException($"Request timed out after {timeout ?? _defaultTimeout}."));
+        // TODO (2025-11-28 DS): vNext receipted timeout exception handling. It always throws and fails to cast to TResponse
+        ////pr.Payload.SetResult(pr);
+        pr.Payload.TrySetException(new TimeoutException($"Request timed out after {timeout ?? _defaultTimeout}."));
 
         if (_logger is not null && _logger.IsEnabled(LogLevel.Warning))
           _logger.LogWarning("Request {CorrelationId} timed out after {Timeout}", correlationId, effectiveTimeout);
@@ -197,7 +197,7 @@ public class EventAggregator : IEventAggregator
       if (envelope is not null)
         await _ipcEnvelopeTransport!.SendAsync(envelope, effectiveCt).ConfigureAwait(false);
 
-      // TODO: (2025-11-28): Fix receipted timeout exception handling. It always fails to cast 'PendingRequest' to TResponse
+      // TODO: (2025-11-28): vNext receipted timeout exception handling. It always fails to cast 'PendingRequest' to TResponse
       // TODO: Wait for receiving
       var obj = await pending.Payload.Task.ConfigureAwait(false);
       ////object? obj = await pending.Payload.Task; ////.Task.ConfigureAwait(false);

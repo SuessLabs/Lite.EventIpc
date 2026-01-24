@@ -7,7 +7,7 @@ using Lite.EventIpc.IpcTransport;
 using Lite.EventIpc.Tests.Models;
 using Microsoft.Extensions.Logging;
 
-namespace Lite.EventIpc.Tests.IpcOneWayTransporter;
+namespace Lite.EventIpc.Tests.IpcTransportTests;
 
 [SupportedOSPlatform("windows")]
 [TestClass]
@@ -67,7 +67,7 @@ public class MemoryMappedTests : BaseTestClass
   }
 
   [TestMethod]
-  [Ignore("This methodogoly is not implemented yet.")]
+  [Ignore("This methodology is not implemented yet.")]
   public void VNextTcpTransportTest()
   {
     var msgPayload = "hello";

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Lite.EventIpc.IpcTransport;
 using Lite.EventIpc.Tests.Models;
 
-namespace Lite.EventIpc.Tests.IpcOneWayTransporter;
+namespace Lite.EventIpc.Tests.IpcTransportTests;
 
 [TestClass]
 [DoNotParallelize]
@@ -42,7 +42,7 @@ public class NamedPipesTests : BaseTestClass
   }
 
   [TestMethod]
-  [Ignore("This methodogoly is not implemented yet.")]
+  [Ignore("This methodology is not implemented yet.")]
   public void VNextNamedPipeTest()
   {
     var client = new EventAggregator();

@@ -4,27 +4,35 @@
     <!--<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>-->
     <!--<TargetFramework>netstandard2.1</TargetFramework>-->
     <TargetFramework>net10.0</TargetFramework>
-    <FileVersion>1.0.1</FileVersion>
     <Configurations>Debug;Release;PREVIEW</Configurations>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AssemblyVersion>1.2.0</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <VersionPrefix>$(AssemblyVersion)</VersionPrefix>
+    <VersionSuffix>-alpha1</VersionSuffix>
+    <Version>$(VersionPrefix)$(VersionSuffix)</Version>
+  </PropertyGroup>
 
   <PropertyGroup>
     <!-- NuGet metadata -->
-    <PackageId>Lite.EventIpc</PackageId>
-    <Version>1.0.1</Version>
+    <Title>Lite.EventIpc</Title>
     <Authors>Damian Suess</Authors>
     <Description>Async Event Aggregator with optaional IPC Transports. Uses weak references, request/response, timeouts, Transports Named Pipes, Memory-Mapped Files, and TCP/IP.</Description>
-    <RepositoryUrl>https://github.com/SuessLabs/Lite.EventIpc</RepositoryUrl>
+
+    <PackageId>Lite.EventIpc</PackageId>
     <PackageTags>event-aggregator;ipc;named-pipes;tcp;memory-mapped;pubsub;request-response</PackageTags>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Title>Lite.EventIpc</Title>
     <PackageProjectUrl>https://github.com/SuessLabs/Lite.EventIpc</PackageProjectUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageIcon>logo.png</PackageIcon>
     <PackageLicenseFile>license.md</PackageLicenseFile>
-  </PropertyGroup>
 
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/SuessLabs/Lite.EventIpc</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\docs\logo.png">
@@ -41,12 +49,10 @@
     </None>
   </ItemGroup>
 
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
-
 
   <ItemGroup>
     <Folder Include="IpcReceiptTransport\" />

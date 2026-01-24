@@ -9,11 +9,11 @@ using Microsoft.Extensions.Logging;
 namespace Lite.EventIpc.Tests.LocalEvents;
 
 [TestClass]
-public class AggregatorTests : BaseTestClass
+public class BasicSubscriptionTests : BaseTestClass
 {
   private EventAggregator _eventAggregator;
 
-  public AggregatorTests()
+  public BasicSubscriptionTests()
   {
     _eventAggregator = null!; // Suppress not initialized warning
   }
@@ -31,7 +31,8 @@ public class AggregatorTests : BaseTestClass
     const string sendMsg = "hi";
     const string recvMsg = "HI";
 
-    _eventAggregator.SubscribeRequest<Ping, Pong>(req => Task.FromResult(new Pong(req.Message.ToUpperInvariant())));
+    _eventAggregator.SubscribeRequest<Ping, Pong>(
+      req => Task.FromResult(new Pong(req.Message.ToUpperInvariant())));
 
     // NOTE: No timeout provided
     var resp = await _eventAggregator.RequestAsync<Ping, Pong>(new Ping(sendMsg));
@@ -88,7 +89,7 @@ public class AggregatorTests : BaseTestClass
   }
 
   [TestMethod]
-  public async Task RequestWithoutTimeoutsTrowsAsync()
+  public async Task RequestWithoutTimeoutsThrowsAsync()
   {
     // Use case:
     //  There is no local subscription, no IPC, or timeout assigned

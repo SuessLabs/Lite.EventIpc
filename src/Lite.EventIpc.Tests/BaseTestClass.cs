@@ -15,7 +15,12 @@ public class BaseTestClass
   public const int DefaultTimeout200 = 200;
 
   [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "This is a parent class")]
-  protected ILogger<EventAggregator>? _logger;
+  protected ILogger<EventAggregator> _logger;
+
+  public BaseTestClass()
+  {
+    _logger = CreateConsoleLogger<EventAggregator>(LogLevel.Trace);
+  }
 
   public TestContext TestContext { get; set; }
 

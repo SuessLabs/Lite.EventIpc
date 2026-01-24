@@ -3,10 +3,10 @@
 
 using System.Net;
 using System.Threading.Tasks;
-using Lite.EventIpc.Tests.Models;
 using Lite.EventIpc.IpcTransport;
+using Lite.EventIpc.Tests.Models;
 
-namespace Lite.EventIpc.Tests.IpcOneWayTransporter;
+namespace Lite.EventIpc.Tests.IpcTransportTests;
 
 [TestClass]
 [DoNotParallelize]
@@ -49,7 +49,7 @@ public class TcpTransportTests : BaseTestClass
   }
 
   [TestMethod]
-  [Ignore("This methodogoly is not implemented yet.")]
+  [Ignore("This methodology is not implemented yet.")]
   public void VNextTcpTransportTest()
   {
     var server = new EventAggregator();

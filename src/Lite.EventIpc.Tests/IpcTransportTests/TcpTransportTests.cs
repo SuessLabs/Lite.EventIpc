@@ -14,6 +14,9 @@ public class TcpTransportTests : BaseTestClass
 {
   private const int RequestSendPort = 6001;
 
+  private readonly string _addrClient = IPAddress.Loopback.ToString();
+  private readonly string _addrServer = IPAddress.Loopback.ToString();
+
   private string _msgPayload = "hello";
   private bool _msgReceived = false;
 
@@ -30,8 +33,8 @@ public class TcpTransportTests : BaseTestClass
     var msgPayload = "hello";
     var msgReceived = false;
 
-    var serverTransport = new TcpTransport(IPAddress.Loopback.ToString(), RequestSendPort);
-    var clientTransport = new TcpTransport(IPAddress.Loopback.ToString(), RequestSendPort);
+    var serverTransport = new TcpTransport(_addrServer, RequestSendPort);
+    var clientTransport = new TcpTransport(_addrClient, RequestSendPort);
 
     // Server listener
     serverTransport.StartListening<Ping>(req =>
@@ -55,8 +58,8 @@ public class TcpTransportTests : BaseTestClass
     var server = new EventAggregator();
     var client = new EventAggregator();
 
-    var serverTransport = new TcpTransport(IPAddress.Loopback.ToString(), RequestSendPort);
-    var clientTransport = new TcpTransport(IPAddress.Loopback.ToString(), RequestSendPort);
+    var serverTransport = new TcpTransport(_addrServer, RequestSendPort);
+    var clientTransport = new TcpTransport(_addrClient, RequestSendPort);
 
     server.UseIpcTransport(serverTransport);
     client.UseIpcTransport(clientTransport);

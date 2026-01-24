@@ -11,7 +11,7 @@ namespace Lite.EventIpc.Tests.IpcTransportTests;
 [DoNotParallelize]
 public class NamedPipesTests : BaseTestClass
 {
-  private string _msgPayload = "hello";
+  private readonly string _msgPayload = "hello";
   private bool _msgReceived = false;
 
   [TestInitialize]
@@ -36,7 +36,7 @@ public class NamedPipesTests : BaseTestClass
     serverTransport.Send<Ping>(new Ping(_msgPayload));
 
     // Give it a moment
-    Task.Delay(DefaultTimeout200, TestContext.CancellationToken).Wait();
+    Task.Delay(DefaultTimeout200, TestContext.CancellationTokenSource.Token).Wait(TestContext.CancellationTokenSource.Token);
 
     Assert.IsTrue(_msgReceived);
   }

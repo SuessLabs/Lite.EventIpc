@@ -6,8 +6,11 @@
   <ItemGroup>
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.0.0-1.25277.114" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.3.2" />
     <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.0.2" />
     <PackageVersion Include="MSTest" Version="3.10.4" />
     <PackageVersion Include="MSTest.TestAdapter" Version="4.0.2" />

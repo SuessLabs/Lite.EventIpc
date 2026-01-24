@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Console;
 namespace Lite.EventIpc.Tests;
 
 [TestClass]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0016:Test class should have test method", Justification = "Its a base class")]
 public class BaseTestClass
 {
   /// <summary>Default timeout.. don't wait too long.</summary>
@@ -24,7 +25,7 @@ public class BaseTestClass
 
   public TestContext TestContext { get; set; }
 
-  protected ILogger<T> CreateConsoleLogger<T>(LogLevel minimumLevel = LogLevel.Debug)
+  protected static ILogger<T> CreateConsoleLogger<T>(LogLevel minimumLevel = LogLevel.Debug)
   {
     var factory = LoggerFactory.Create(config =>
     {

@@ -36,6 +36,8 @@ public class SubscribeRequestTests : BaseTestClass
 
     // NOTE: No timeout provided
     var resp = await _eventAggregator.RequestAsync<Ping, Pong>(new Ping(sendMsg));
+
+    Assert.IsNotNull(resp);
     Assert.AreEqual(recvMsg, resp.Message);
   }
 
@@ -49,6 +51,8 @@ public class SubscribeRequestTests : BaseTestClass
 
     // NOTE: No timeout provided
     var resp = await _eventAggregator.RequestAsync<Ping, Pong>(new Ping(sendMsg));
+
+    Assert.IsNotNull(resp);
     Assert.AreEqual(recvMsg, resp.Message);
   }
 

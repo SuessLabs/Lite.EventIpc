@@ -11,6 +11,14 @@ namespace Lite.EventIpc;
 
 public interface IEventAggregator
 {
+  /// <summary>Gets or sets a value indicating whether to suppress the <see cref="TimeoutException"/> from being thrown by <see cref="RequestAsync{TEvent, TResponse}(TEvent, TimeSpan?, CancellationToken)"/> (default: false).</summary>
+  /// <remarks>
+  ///   When enabled, 'TResponse' will return NULL in the event of a timeout.
+  ///   When no there is no Timeout set and no local event subscription or IPC Transport subscriptions
+  ///   configured, an exception will still be thrown.
+  /// </remarks>
+  bool SuppressTimeoutException { get; set; }
+
   /// <summary>Publishes event object to all registered subscribers (one-way transport).</summary>
   /// <remarks>
   ///   Subscribers must be registered to receive events of type <typeparamref name="TEvent"/>. This
@@ -33,11 +41,23 @@ public interface IEventAggregator
   /// <typeparam name="TEvent">The type of event data to publish.</typeparam>
   /// <typeparam name="TResponse">The type of response event data to receive.</typeparam>
   /// <param name="request">The event data payload to publish.</param>
+  /// <param name="timeoutMs">Milliseconds to wait for <typeparamref name="TResponse"/>.</param>
+  /// <param name="cancellationToken"><see cref="CancellationToken"/>.</param>
+  /// <exception cref="TimeoutException">Thrown when the request times out.</exception>"
+  /// <returns>Response event data.</returns>
+  Task<TResponse?> RequestAsync<TEvent, TResponse>(TEvent request, int timeoutMs, CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Publish with request bi-directionally. Sends a event object <typeparamref name="TEvent"/> and waits for the response object <typeparamref name="TResponse"/> asynchronously.
+  /// </summary>
+  /// <typeparam name="TEvent">The type of event data to publish.</typeparam>
+  /// <typeparam name="TResponse">The type of response event data to receive.</typeparam>
+  /// <param name="request">The event data payload to publish.</param>
   /// <param name="timeout"><see cref="TimeSpan"/> to wait for <typeparamref name="TResponse"/>.</param>
   /// <param name="cancellationToken"><see cref="CancellationToken"/>.</param>
   /// <exception cref="TimeoutException">Thrown when the request times out.</exception>"
   /// <returns>Response event data.</returns>
-  Task<TResponse> RequestAsync<TEvent, TResponse>(TEvent request, TimeSpan? timeout = null, CancellationToken cancellationToken = default);
+  Task<TResponse?> RequestAsync<TEvent, TResponse>(TEvent request, TimeSpan? timeout = null, CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Registers a handler to be invoked when an event of the specified type is published.

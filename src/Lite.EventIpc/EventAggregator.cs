@@ -106,8 +106,7 @@ public class EventAggregator : IEventAggregator
   }
 
   /// <inheritdoc/>
-  /// <remarks>Publish with bi-directional request transport only.</remarks>
-  public async Task<TResponse> RequestAsync<TRequest, TResponse>(TRequest request, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+  public async Task<TResponse> RequestAsync<TEvent, TResponse>(TEvent request, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
   {
     if (request is null)
       throw new ArgumentNullException(nameof(request));
@@ -119,14 +118,14 @@ public class EventAggregator : IEventAggregator
     {
       _logger.LogInformation(
         "Sending request {RequestType} with CorrelationId {CorrelationId} and timeout {Timeout}",
-        typeof(TRequest).FullName,
+        typeof(TEvent).FullName,
         correlationId,
         effectiveTimeout);
     }
 
     // Try to find local event subscription handler first and exists
     // NOTE: Consider separating IPC from local event request/response handling
-    var local = GetFirstRequestHandler(typeof(TRequest));
+    var local = GetFirstRequestHandler(typeof(TEvent));
     if (local is not null)
     {
       var r = await local.InvokeAsync(request).ConfigureAwait(false);

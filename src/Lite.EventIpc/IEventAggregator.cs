@@ -11,14 +11,7 @@ namespace Lite.EventIpc;
 
 public interface IEventAggregator
 {
-  /// <summary>Publish event async.</summary>
-  /// <typeparam name="TEvent">Event Type.</typeparam>
-  /// <param name="eventData">Event object.</param>
-  /// <param name="cancellationToken">Cancellation token.</param>
-  /// <returns>Task.</returns>
-  Task PublishAsync<TEvent>(TEvent eventData, CancellationToken cancellationToken = default);
-
-  /// <summary>Publishes the specified event to all registered subscribers.</summary>
+  /// <summary>Publishes event object to all registered subscribers (one-way transport).</summary>
   /// <remarks>
   ///   Subscribers must be registered to receive events of type <typeparamref name="TEvent"/>. This
   ///   method does not guarantee delivery order or that all subscribers will process the event synchronously.
@@ -27,7 +20,24 @@ public interface IEventAggregator
   /// <param name="eventData">The event data to be published to subscribers. Cannot be null.</param>
   void Publish<TEvent>(TEvent eventData);
 
-  Task<TResponse> RequestAsync<TRequest, TResponse>(TRequest request, TimeSpan? timeout = null, CancellationToken cancellationToken = default);
+  /// <summary>Publish event object async (one-way transport).</summary>
+  /// <typeparam name="TEvent">Event Type.</typeparam>
+  /// <param name="eventData">Event object.</param>
+  /// <param name="cancellationToken">Cancellation token.</param>
+  /// <returns>Task.</returns>
+  Task PublishAsync<TEvent>(TEvent eventData, CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Publish with request bi-directionally. Sends a event object <typeparamref name="TEvent"/> and waits for the response object <typeparamref name="TResponse"/> asynchronously.
+  /// </summary>
+  /// <typeparam name="TEvent">The type of event data to publish.</typeparam>
+  /// <typeparam name="TResponse">The type of response event data to receive.</typeparam>
+  /// <param name="request">The event data payload to publish.</param>
+  /// <param name="timeout"><see cref="TimeSpan"/> to wait for <typeparamref name="TResponse"/>.</param>
+  /// <param name="cancellationToken"><see cref="CancellationToken"/>.</param>
+  /// <exception cref="TimeoutException">Thrown when the request times out.</exception>"
+  /// <returns>Response event data.</returns>
+  Task<TResponse> RequestAsync<TEvent, TResponse>(TEvent request, TimeSpan? timeout = null, CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Registers a handler to be invoked when an event of the specified type is published.
@@ -41,7 +51,8 @@ public interface IEventAggregator
   void Subscribe<TEvent>(Action<TEvent> handler);
 
   /// <summary>
-  ///   Registers a handler to process incoming requests of the specified type asynchronously.
+  ///   Subscribes Registers a handler to process incoming requests of the specified type asynchronously.
+  ///   Must be used with <see cref="RequestAsync{TRequest, TResponse}(TRequest, TimeSpan?, CancellationToken)"/>.
   /// </summary>
   /// <remarks>
   ///   Multiple handlers can be registered for the same request type. Handlers are held using weak

@@ -3,16 +3,19 @@
 
 using System.Net;
 using System.Threading.Tasks;
-using Lite.EventIpc.Tests.Models;
 using Lite.EventIpc.IpcTransport;
+using Lite.EventIpc.Tests.Models;
 
-namespace Lite.EventIpc.Tests.IpcOneWayTransporter;
+namespace Lite.EventIpc.Tests.IpcTransportTests;
 
 [TestClass]
 [DoNotParallelize]
 public class TcpTransportTests : BaseTestClass
 {
   private const int RequestSendPort = 6001;
+
+  private readonly string _addrClient = IPAddress.Loopback.ToString();
+  private readonly string _addrServer = IPAddress.Loopback.ToString();
 
   private string _msgPayload = "hello";
   private bool _msgReceived = false;
@@ -30,8 +33,8 @@ public class TcpTransportTests : BaseTestClass
     var msgPayload = "hello";
     var msgReceived = false;
 
-    var serverTransport = new TcpTransport(IPAddress.Loopback.ToString(), RequestSendPort);
-    var clientTransport = new TcpTransport(IPAddress.Loopback.ToString(), RequestSendPort);
+    var serverTransport = new TcpTransport(_addrServer, RequestSendPort);
+    var clientTransport = new TcpTransport(_addrClient, RequestSendPort);
 
     // Server listener
     serverTransport.StartListening<Ping>(req =>
@@ -44,19 +47,19 @@ public class TcpTransportTests : BaseTestClass
     clientTransport.Send(new Ping(msgPayload));
 
     // Give it a moment
-    Task.Delay(DefaultTimeout).Wait();
+    Task.Delay(Timeout50).Wait();
     Assert.IsTrue(msgReceived);
   }
 
   [TestMethod]
-  [Ignore("This methodogoly is not implemented yet.")]
+  [Ignore("This methodology is not implemented yet.")]
   public void VNextTcpTransportTest()
   {
     var server = new EventAggregator();
     var client = new EventAggregator();
 
-    var serverTransport = new TcpTransport(IPAddress.Loopback.ToString(), RequestSendPort);
-    var clientTransport = new TcpTransport(IPAddress.Loopback.ToString(), RequestSendPort);
+    var serverTransport = new TcpTransport(_addrServer, RequestSendPort);
+    var clientTransport = new TcpTransport(_addrClient, RequestSendPort);
 
     server.UseIpcTransport(serverTransport);
     client.UseIpcTransport(clientTransport);
@@ -72,7 +75,7 @@ public class TcpTransportTests : BaseTestClass
     client.Publish(new Ping(_msgPayload));
 
     // Give it a moment
-    Task.Delay(DefaultTimeout).Wait();
+    Task.Delay(Timeout50).Wait();
     Assert.IsTrue(_msgReceived);
   }
 }

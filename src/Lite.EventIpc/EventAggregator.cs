@@ -106,8 +106,7 @@ public class EventAggregator : IEventAggregator
   }
 
   /// <inheritdoc/>
-  /// <remarks>Bi-directional transport only.</remarks>
-  public async Task<TResponse> RequestAsync<TRequest, TResponse>(TRequest request, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+  public async Task<TResponse> RequestAsync<TEvent, TResponse>(TEvent request, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
   {
     if (request is null)
       throw new ArgumentNullException(nameof(request));
@@ -119,14 +118,14 @@ public class EventAggregator : IEventAggregator
     {
       _logger.LogInformation(
         "Sending request {RequestType} with CorrelationId {CorrelationId} and timeout {Timeout}",
-        typeof(TRequest).FullName,
+        typeof(TEvent).FullName,
         correlationId,
         effectiveTimeout);
     }
 
     // Try to find local event subscription handler first and exists
     // NOTE: Consider separating IPC from local event request/response handling
-    var local = GetFirstRequestHandler(typeof(TRequest));
+    var local = GetFirstRequestHandler(typeof(TEvent));
     if (local is not null)
     {
       var r = await local.InvokeAsync(request).ConfigureAwait(false);
@@ -146,7 +145,7 @@ public class EventAggregator : IEventAggregator
     if (_usingIpcTransport && _ipcEnvelopeTransport is null)
       throw new InvalidOperationException("No IPC transport configured for request/response.");
 
-    // Edge case: Timeout response not tested with non-recepted transport
+    // Edge case: Timeout response not tested with non-receipted transport
     // Don't allow it for now
     if (_ipcTransport is not null)
       throw new InvalidOperationException("Non-receipted IPC transports are allowed for request/response.");
@@ -176,14 +175,20 @@ public class EventAggregator : IEventAggregator
 
     using (effectiveCt.Register(() =>
     {
+      // TODO (2025-11-30) Need to determine if we 'canceled' with success or failed with Timeout
       if (_pendingRequests.TryRemove(correlationId, out var pr))
       {
-        // TODO (2025-11-28): Fix receipted timeout exception handling. It always throws and fails to cast to TResponse
-        //// pr.Payload.SetResult(pr);
+        // TODO (2025-11-28 DS): vNext receipted timeout exception handling. It always throws and fails to cast to TResponse
+        ////pr.Payload.SetResult(pr);
         pr.Payload.TrySetException(new TimeoutException($"Request timed out after {timeout ?? _defaultTimeout}."));
 
         if (_logger is not null && _logger.IsEnabled(LogLevel.Warning))
           _logger.LogWarning("Request {CorrelationId} timed out after {Timeout}", correlationId, effectiveTimeout);
+      }
+      else
+      {
+        if (_logger is not null && _logger.IsEnabled(LogLevel.Warning))
+          _logger.LogWarning("Request {CorrelationId} not found and timed out after {Timeout}", correlationId, effectiveTimeout);
       }
     }))
     {
@@ -191,8 +196,10 @@ public class EventAggregator : IEventAggregator
       if (envelope is not null)
         await _ipcEnvelopeTransport!.SendAsync(envelope, effectiveCt).ConfigureAwait(false);
 
-      // TODO: (2025-11-28): Fix receipted timeout exception handling. It always fails to cast 'PendingRequest' to TResponse
+      // TODO: (2025-11-28): vNext receipted timeout exception handling. It always fails to cast 'PendingRequest' to TResponse
+      // TODO: Wait for receiving
       var obj = await pending.Payload.Task.ConfigureAwait(false);
+      ////object? obj = await pending.Payload.Task; ////.Task.ConfigureAwait(false);
       if (_logger is not null && _logger.IsEnabled(LogLevel.Information))
         _logger.LogInformation("Received response for {CorrelationId}", correlationId);
 
@@ -363,6 +370,7 @@ public class EventAggregator : IEventAggregator
       return;
     }
 
+    // Handle Envelope Response
     if (envelope.IsResponse)
     {
       if (_pendingRequests.TryRemove(envelope.CorrelationId, out var pr))
@@ -396,6 +404,7 @@ public class EventAggregator : IEventAggregator
       return;
     }
 
+    // Handle Envelope Response
     if (envelope.IsRequest)
     {
       var handler = GetFirstRequestHandler(eventType);

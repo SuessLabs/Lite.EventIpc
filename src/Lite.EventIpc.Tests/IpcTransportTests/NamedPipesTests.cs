@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using Lite.EventIpc.IpcTransport;
 using Lite.EventIpc.Tests.Models;
 
-namespace Lite.EventIpc.Tests.IpcOneWayTransporter;
+namespace Lite.EventIpc.Tests.IpcTransportTests;
 
 [TestClass]
 [DoNotParallelize]
 public class NamedPipesTests : BaseTestClass
 {
-  private string _msgPayload = "hello";
+  private readonly string _msgPayload = "hello";
   private bool _msgReceived = false;
 
   [TestInitialize]
@@ -36,13 +36,13 @@ public class NamedPipesTests : BaseTestClass
     serverTransport.Send<Ping>(new Ping(_msgPayload));
 
     // Give it a moment
-    Task.Delay(DefaultTimeout200, TestContext.CancellationToken).Wait();
+    Task.Delay(Timeout200, TestContext.CancellationTokenSource.Token).Wait(TestContext.CancellationTokenSource.Token);
 
     Assert.IsTrue(_msgReceived);
   }
 
   [TestMethod]
-  [Ignore("This methodogoly is not implemented yet.")]
+  [Ignore("This methodology is not implemented yet.")]
   public void VNextNamedPipeTest()
   {
     var client = new EventAggregator();

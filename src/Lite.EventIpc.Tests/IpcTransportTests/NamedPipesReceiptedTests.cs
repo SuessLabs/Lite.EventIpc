@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Lite.EventIpc.IpcReceiptTransport;
 using Lite.EventIpc.Tests.Models;
 
-namespace Lite.EventIpc.Tests.IpcReceiptedTransporters;
+namespace Lite.EventIpc.Tests.IpcTransportTests;
 
 [TestClass]
 [DoNotParallelize]
-public class NamedPipesTests : BaseTestClass
+public class NamedPipesReceiptedTests : BaseTestClass
 {
   [TestMethod]
   public async Task Request_Response_Via_NamedPipesAsync()

@@ -1,48 +1,54 @@
-
 name: Build, Test, Pack, Zip, and Publish
 
 on:
   push:
     branches: [ master, develop ]
+#    tags:
+#      - 'v*'
   pull_request:
     branches: [ master, develop ]
 
+env:
+  # Update to desired major.minor. This is the base version family.
+  BASE_VERSION: "2.1"
+  PATH_SLNX: "src\\Lite.EventIpc.slnx"
+  PATH_LIB: "src\\Lite.EventIpc\\Lite.EventIpc.csproj"
+  PATH_ARTIFACTS: ${{github.workspace}}\artifacts
 
 jobs:
   build-test-pack:
     runs-on: windows-latest
 
-    env:
-      # Update to desired major.minor. This is the base version family.
-      BASE_VERSION: "1.1"
-
+    ## This job runs if the ref is a branch
+    ##if: startsWith(github.ref, 'refs/heads/')
     steps:
       # 1. Checkout source
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: 1. Checkout repository
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # ensure tags/commits info is available when we expand logic later
 
       # 2. Setup .NET SDK
-      - name: Setup .NET
+      - name: 2. Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x' # Change to your target version
 
       # 3. Restore dependencies
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: 3. Restore dependencies
+        run: dotnet restore ${{env.PATH_SLNX}}
 
       # 4. Build solution
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+      - name: 4. Build
+        run: dotnet build ${{env.PATH_SLNX}} --configuration Release --no-restore
 
       # 5. Run tests
-      - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+      - name: 5. Test
+        run: dotnet test ${{env.PATH_SLNX}} --configuration Release --no-build --verbosity normal
 
       # 6. Determin SemVersion package version
-      - name: Determine version
+      # "$run" is based on GitHub Action's Workflow "Runs" counter.
+      - name: 6. Determine version
         shell: pwsh
         run: |
           $branch     = "${{ github.ref_name }}"
@@ -73,8 +79,10 @@ jobs:
           if ($prerelease) { Write-Host "Version suffix=$prerelease" }
 
       # 7. Pack NuGet
-      - name: Pack NuGet
-        run: dotnet pack --configuration Release --no-build --output ./artifacts
+      - name: 7. Pack NuGet
+        # Optionally, "--include-symbols"
+        run: dotnet pack ${{env.PATH_LIB}} --configuration Release --no-build --output ${{env.PATH_ARTIFACTS}}
+        #    dotnet pack source/Lite.EventIpc/Lite.EventIpc.csproj --configuration Release --no-build --output ./artifacts
       #- name: Pack NuGet
       #  shell: pwsh
       #  run: |
@@ -88,25 +96,33 @@ jobs:
       #      --output ./artifacts
 
 
-      # 8. Create ZIP of artifacts
-      - name: Create ZIP archive
-        run: |
-          mkdir ./zip
-          powershell Compress-Archive -Path ./artifacts/* -DestinationPath ./zip/artifacts.zip
+      ## 8. Create ZIP of artifacts
+      ##- name: 8. Create ZIP archive
+      ##  run: |
+      ##    mkdir ./zip
+      ##    powershell Compress-Archive -Path ./artifacts/* -DestinationPath ./zip/artifacts.zip
 
-        #shell: pwsh
-        #run: |
-        #  New-Item -ItemType Directory -Force -Path ./zip | Out-Null
-        #  Compress-Archive -Path ./artifacts/* -DestinationPath ./zip/artifacts.zip
+      ##  #shell: pwsh
+      ##  #run: |
+      ##  #  New-Item -ItemType Directory -Force -Path ./zip | Out-Null
+      ##  #  Compress-Archive -Path ./artifacts/* -DestinationPath ./zip/artifacts.zip
 
-      # 9. Upload ZIP as workflow artifact
-      - name: Upload ZIP
-        uses: actions/upload-artifact@v4
-        with:
-          name: nuget-package-zip
-          path: ./zip/artifacts.zip
+      ## 9. Upload ZIP as workflow artifact
+      ##- name: 9. Upload ZIP
+      ##  uses: actions/upload-artifact@v4
+      ##  with:
+      ##    name: nuget-package-zip
+      ##    path: ./zip/artifacts.zip
 
       ## 10) Publish to NuGet.org (master branch, push events only)
+      - name: 8) NuGet Push Package
+        env:
+          NUGET_API_URL: "https://api.nuget.org/v3/index.json"
+
+        ## Optionally pass, `--skip-duplicate` if a pkg version already exists on NuGet.org
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+        run: dotnet nuget push ${{env.PATH_ARTIFACTS}}\*.nupkg -k ${{secrets.NUGET_AUTH_TOKEN}} -s ${{env.NUGET_API_URL}}
+
       #- name: Publish to NuGet.org
       #  if: github.ref_name == 'master' && github.event_name == 'push'
       #  env:

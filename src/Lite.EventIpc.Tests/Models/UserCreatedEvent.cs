@@ -5,5 +5,5 @@ namespace Lite.EventIpc.Tests.Models;
 
 public class UserCreatedEvent
 {
-  public string UserName { get; set; }
+  public string? UserName { get; set; }
 }

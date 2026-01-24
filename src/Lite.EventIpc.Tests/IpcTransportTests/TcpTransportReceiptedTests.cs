@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using Lite.EventIpc.IpcReceiptTransport;
 using Lite.EventIpc.Tests.Models;
 
-namespace Lite.EventIpc.Tests.IpcReceiptedTransporters;
+namespace Lite.EventIpc.Tests.IpcTransportTests;
 
 [TestClass]
 [DoNotParallelize]
-public class TcpTransportTests : BaseTestClass
+public class TcpTransportReceiptedTests : BaseTestClass
 {
   [TestMethod]
   [DoNotParallelize]

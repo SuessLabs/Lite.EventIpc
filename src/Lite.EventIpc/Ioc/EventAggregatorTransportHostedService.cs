@@ -8,13 +8,13 @@ using Lite.EventIpc.IpcReceiptTransport;
 using Lite.EventIpc.IpcTransport;
 using Microsoft.Extensions.Hosting;
 
-namespace Lite.EventIpc;
+namespace Lite.EventIpc.Ioc;
 
 public sealed class EventAggregatorTransportHostedService : IHostedService
 {
   private readonly IEventAggregator _aggregator;
   private readonly IEventEnvelopeTransport _ipcEnvelopeTransport;
-  private readonly IEventTransport _ipcTransport;
+  ////private readonly IEventTransport _ipcTransport;
 
   public EventAggregatorTransportHostedService(IEventAggregator aggregator, IEventEnvelopeTransport transport)
   {

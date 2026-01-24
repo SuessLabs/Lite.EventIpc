@@ -69,6 +69,11 @@ public class EventAggregator : IEventAggregator
     ////_options = options?.Value ?? new LiteEventAggregatorOptions();
   }
 
+  ////public int DefaultRequestTimeout { get; set; } = 5000;
+
+  /// <inheritdoc/>
+  public bool SuppressTimeoutException { get; set; } = false;
+
   /// <inheritdoc/>
   public void Publish<TEvent>(TEvent eventData)
   {
@@ -106,12 +111,16 @@ public class EventAggregator : IEventAggregator
   }
 
   /// <inheritdoc/>
-  public async Task<TResponse> RequestAsync<TEvent, TResponse>(TEvent request, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+  public async Task<TResponse?> RequestAsync<TEvent, TResponse>(TEvent request, int timeoutMs, CancellationToken cancellationToken = default) =>
+    await RequestAsync<TEvent, TResponse>(request, TimeSpan.FromMilliseconds(timeoutMs), cancellationToken);
+
+  /// <inheritdoc/>
+  public async Task<TResponse?> RequestAsync<TEvent, TResponse>(TEvent request, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
   {
     if (request is null)
       throw new ArgumentNullException(nameof(request));
 
-    var effectiveTimeout = timeout; //// ?? _options.DefaultRequestTimeout;
+    var effectiveTimeout = timeout; //// ?? DefaultRequestTimeout;
     var correlationId = Guid.NewGuid().ToString("N");
 
     if (_logger is not null && _logger.IsEnabled(LogLevel.Information))
@@ -136,11 +145,10 @@ public class EventAggregator : IEventAggregator
     }
 
     // NOTE:
-    //  Because "RequestAsync" wants a response back, we need to inform there isn't a listener.
-    //  No local handler found or timeout, avoids sitting in a black hole
-    // TODO (2025-11-28): Consider creating a "MissingRequestSubscriberException" type for this scenario (there's a timeout ex below)
+    //  "RequestAsync" needs a response back, so we must inform the user there
+    //  isn't a listener (local nor IPC) and no timeout configured. Otherwise we're in a black hole!
     if (!_usingIpcTransport && timeout is null)
-      throw new TimeoutException("No IPC transport configured for request/response, and no local handler found.");
+      throw new MissingSubscribeRequestException("No IPC transport configured for request/response, and no local handler found.");
 
     if (_usingIpcTransport && _ipcEnvelopeTransport is null)
       throw new InvalidOperationException("No IPC transport configured for request/response.");
@@ -154,10 +162,10 @@ public class EventAggregator : IEventAggregator
     var pending = new PendingRequest { ResponseType = typeof(TResponse) };
     _pendingRequests[correlationId] = pending;
 
-    EventEnvelope? envelope = null;
+    EventEnvelope? ipcEnvelope = null;
     if (_usingIpcTransport && _ipcEnvelopeTransport is not null)
     {
-      envelope = EventSerializer.Wrap(
+      ipcEnvelope = EventSerializer.Wrap(
         request,
         isRequest: true,
         replyTo: _ipcEnvelopeTransport!.ReplyAddress,
@@ -178,9 +186,16 @@ public class EventAggregator : IEventAggregator
       // TODO (2025-11-30) Need to determine if we 'canceled' with success or failed with Timeout
       if (_pendingRequests.TryRemove(correlationId, out var pr))
       {
-        // TODO (2025-11-28 DS): vNext receipted timeout exception handling. It always throws and fails to cast to TResponse
-        ////pr.Payload.SetResult(pr);
-        pr.Payload.TrySetException(new TimeoutException($"Request timed out after {timeout ?? _defaultTimeout}."));
+        if (!SuppressTimeoutException)
+        {
+          // TODO (2025-11-28 DS): vNext receipted timeout exception handling. It always throws and fails to cast to TResponse
+          ////pr.Payload.SetResult(pr);
+          pr.Payload.TrySetException(new TimeoutException($"Request timed out after {timeout ?? _defaultTimeout}."));
+        }
+        else
+        {
+          pr.Payload.SetResult(null);
+        }
 
         if (_logger is not null && _logger.IsEnabled(LogLevel.Warning))
           _logger.LogWarning("Request {CorrelationId} timed out after {Timeout}", correlationId, effectiveTimeout);
@@ -193,25 +208,26 @@ public class EventAggregator : IEventAggregator
     }))
     {
       // For receipted IPC events only
-      if (envelope is not null)
-        await _ipcEnvelopeTransport!.SendAsync(envelope, effectiveCt).ConfigureAwait(false);
+      if (ipcEnvelope is not null)
+        await _ipcEnvelopeTransport!.SendAsync(ipcEnvelope, effectiveCt).ConfigureAwait(false);
 
+      // Wait for receiving
       // TODO: (2025-11-28): vNext receipted timeout exception handling. It always fails to cast 'PendingRequest' to TResponse
-      // TODO: Wait for receiving
-      var obj = await pending.Payload.Task.ConfigureAwait(false);
+      var responseObj = await pending.Payload.Task.ConfigureAwait(false);
       ////object? obj = await pending.Payload.Task; ////.Task.ConfigureAwait(false);
+
       if (_logger is not null && _logger.IsEnabled(LogLevel.Information))
         _logger.LogInformation("Received response for {CorrelationId}", correlationId);
 
-      return (TResponse)obj!;
+      return (TResponse?)responseObj;
     }
   }
 
   /// <inheritdoc/>
   public void Subscribe<TEvent>(Action<TEvent> handler)
   {
-    var list = _eventHandlers.GetOrAdd(typeof(TEvent), _ => new List<IWeakAction>());
-    list.Add(new WeakAction<TEvent>(handler));
+    var handlers = _eventHandlers.GetOrAdd(typeof(TEvent), _ => []);
+    handlers.Add(new WeakAction<TEvent>(handler));
 
     // Consider logging {Handler} `handler.Method.Name`
     if (_logger is not null && _logger.IsEnabled(LogLevel.Debug))
@@ -221,7 +237,7 @@ public class EventAggregator : IEventAggregator
   /// <inheritdoc/>
   public void SubscribeRequest<TRequest, TResponse>(Func<TRequest, Task<TResponse>> handler)
   {
-    var handlers = _requestHandlers.GetOrAdd(typeof(TRequest), _ => new List<IRequestHandler>());
+    var handlers = _requestHandlers.GetOrAdd(typeof(TRequest), _ => []);
     handlers.Add(new RequestHandler<TRequest, TResponse>(handler));
 
     if (_logger is not null && _logger.IsEnabled(LogLevel.Debug))

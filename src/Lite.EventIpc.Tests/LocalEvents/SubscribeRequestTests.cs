@@ -52,21 +52,6 @@ public class SubscribeRequestTests : BaseTestClass
     Assert.AreEqual(recvMsg, resp.Message);
   }
 
-  /// <summary>Suppress Timeout Exception when no timeout provided.</summary>
-  /// <returns>Task.</returns>
-  [TestMethod]
-  [Ignore("vNext Feature")]
-  public async Task TimeoutSuppressedExceptionAsync()
-  {
-    /*
-    _eventAggregator.SuppressTimeoutException = true;
-
-    Ping ping = new("hi");
-    Pong? response = await _eventAggregator.RequestAsync<Ping, Pong>(ping, null, TestContext.CancellationToken);
-    Assert.IsNull(response);
-    */
-  }
-
   [TestMethod]
   public async Task RequestTimeoutsThrowsAsync()
   {
@@ -85,11 +70,28 @@ public class SubscribeRequestTests : BaseTestClass
   {
     // Use case:
     //  There is no local subscription, no IPC, or timeout assigned
-    await Assert.ThrowsAsync<TimeoutException>(async () =>
+    await Assert.ThrowsAsync<MissingSubscribeRequestException>(async () =>
         await _eventAggregator.RequestAsync<Ping, Pong>(
           new Ping("hi"),
           timeout: null,
           System.Threading.CancellationToken.None));
+  }
+
+  /// <summary>Suppress Timeout Exception when no timeout provided.</summary>
+  /// <returns>Task.</returns>
+  [TestMethod]
+  public async Task TimeoutSuppressedExceptionAsync()
+  {
+    // Enable suppressing timeout exceptions
+    _eventAggregator.SuppressTimeoutException = true;
+
+    Ping ping = new("hi");
+    Pong? response = await _eventAggregator.RequestAsync<Ping, Pong>(
+      ping,
+      Timeout50,
+      TestContext.CancellationTokenSource.Token);
+
+    Assert.IsNull(response);
   }
 
   private async Task<Pong> EventSubscribe_PingAsync(Ping ping)
@@ -97,4 +99,6 @@ public class SubscribeRequestTests : BaseTestClass
     var response = ping.Message.ToUpperInvariant();
     return new Pong(response);
   }
+
+  private record MysteryResponse(string Message);
 }

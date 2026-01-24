@@ -11,7 +11,7 @@
     <AssemblyVersion>1.2.0</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <VersionPrefix>$(AssemblyVersion)</VersionPrefix>
-    <VersionSuffix>-alpha1</VersionSuffix>
+    <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)$(VersionSuffix)</Version>
   </PropertyGroup>
 

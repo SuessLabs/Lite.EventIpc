@@ -150,8 +150,9 @@ public class EventAggregator : IEventAggregator
     if (!_usingIpcTransport && timeout is null)
       throw new MissingSubscribeRequestException("No IPC transport configured for request/response, and no local handler found.");
 
+    // IPC Transport is not set and UseIpcTransport is enabled
     if (_usingIpcTransport && _ipcEnvelopeTransport is null)
-      throw new InvalidOperationException("No IPC transport configured for request/response.");
+      throw new IpcTransportNotSetException("No IPC transport configured for request/response.");
 
     // Edge case: Timeout response not tested with non-receipted transport
     // Don't allow it for now

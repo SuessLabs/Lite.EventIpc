@@ -62,7 +62,7 @@ public class MemoryMappedTests : BaseTestClass
     client.Send(new UserCreatedEvent { UserName = ExpectedUserName });
 
     // Give it a moment
-    Task.Delay(5).Wait();
+    Task.Delay(Timeout50).Wait();
     Assert.IsTrue(msgReceived);
   }
 
@@ -93,7 +93,7 @@ public class MemoryMappedTests : BaseTestClass
     client.Publish(new Ping(msgPayload));
 
     // Give it a moment
-    Task.Delay(DefaultTimeout).Wait();
+    Task.Delay(Timeout50).Wait();
     Assert.IsTrue(msgReceived);
   }
 }

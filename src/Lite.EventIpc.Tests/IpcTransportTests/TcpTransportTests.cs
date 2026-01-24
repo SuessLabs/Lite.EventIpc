@@ -47,7 +47,7 @@ public class TcpTransportTests : BaseTestClass
     clientTransport.Send(new Ping(msgPayload));
 
     // Give it a moment
-    Task.Delay(DefaultTimeout).Wait();
+    Task.Delay(Timeout50).Wait();
     Assert.IsTrue(msgReceived);
   }
 
@@ -75,7 +75,7 @@ public class TcpTransportTests : BaseTestClass
     client.Publish(new Ping(_msgPayload));
 
     // Give it a moment
-    Task.Delay(DefaultTimeout).Wait();
+    Task.Delay(Timeout50).Wait();
     Assert.IsTrue(_msgReceived);
   }
 }

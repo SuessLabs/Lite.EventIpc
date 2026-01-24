@@ -76,7 +76,7 @@ public class SubscribeRequestTests : BaseTestClass
     await Assert.ThrowsAsync<TimeoutException>(async () =>
         await _eventAggregator.RequestAsync<Ping, Pong>(
           new Ping("hi"),
-          timeout: TimeSpan.FromMilliseconds(DefaultTimeout),
+          timeout: TimeSpan.FromMilliseconds(Timeout50),
           System.Threading.CancellationToken.None));
   }
 

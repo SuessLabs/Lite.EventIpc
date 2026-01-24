@@ -10,10 +10,11 @@ namespace Lite.EventIpc.Tests;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MSTEST0016:Test class should have test method", Justification = "Its a base class")]
 public class BaseTestClass
 {
-  /// <summary>Default timeout.. don't wait too long.</summary>
-  public const int DefaultTimeout = 50;
+  /// <summary>Timeout 200 milliseconds.</summary>
+  public const int Timeout200 = 200;
 
-  public const int DefaultTimeout200 = 200;
+  /// <summary>Timeout 50 milliseconds.</summary>
+  public const int Timeout50 = 50;
 
   [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "This is a parent class")]
   protected ILogger<EventAggregator> _logger;

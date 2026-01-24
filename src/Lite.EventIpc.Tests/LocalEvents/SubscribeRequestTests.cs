@@ -9,11 +9,11 @@ using Microsoft.Extensions.Logging;
 namespace Lite.EventIpc.Tests.LocalEvents;
 
 [TestClass]
-public class SubscribeWithResponseTests : BaseTestClass
+public class SubscribeRequestTests : BaseTestClass
 {
   private EventAggregator _eventAggregator;
 
-  public SubscribeWithResponseTests()
+  public SubscribeRequestTests()
   {
     _eventAggregator = null!; // Suppress not initialized warning
   }
@@ -40,6 +40,34 @@ public class SubscribeWithResponseTests : BaseTestClass
   }
 
   [TestMethod]
+  public async Task LocalResponseExpandedSuccessAsync()
+  {
+    const string sendMsg = "hi";
+    const string recvMsg = "HI";
+
+    _eventAggregator.SubscribeRequest<Ping, Pong>(EventSubscribe_PingAsync);
+
+    // NOTE: No timeout provided
+    var resp = await _eventAggregator.RequestAsync<Ping, Pong>(new Ping(sendMsg));
+    Assert.AreEqual(recvMsg, resp.Message);
+  }
+
+  /// <summary>Suppress Timeout Exception when no timeout provided.</summary>
+  /// <returns>Task.</returns>
+  [TestMethod]
+  [Ignore("vNext Feature")]
+  public async Task TimeoutSuppressedExceptionAsync()
+  {
+    /*
+    _eventAggregator.SuppressTimeoutException = true;
+
+    Ping ping = new("hi");
+    Pong? response = await _eventAggregator.RequestAsync<Ping, Pong>(ping, null, TestContext.CancellationToken);
+    Assert.IsNull(response);
+    */
+  }
+
+  [TestMethod]
   public async Task RequestTimeoutsThrowsAsync()
   {
     // Use case:
@@ -62,5 +90,11 @@ public class SubscribeWithResponseTests : BaseTestClass
           new Ping("hi"),
           timeout: null,
           System.Threading.CancellationToken.None));
+  }
+
+  private async Task<Pong> EventSubscribe_PingAsync(Ping ping)
+  {
+    var response = ping.Message.ToUpperInvariant();
+    return new Pong(response);
   }
 }

@@ -106,7 +106,7 @@ public class EventAggregator : IEventAggregator
   }
 
   /// <inheritdoc/>
-  /// <remarks>Bi-directional transport only.</remarks>
+  /// <remarks>Publish with bi-directional request transport only.</remarks>
   public async Task<TResponse> RequestAsync<TRequest, TResponse>(TRequest request, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
   {
     if (request is null)

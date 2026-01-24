@@ -43,7 +43,7 @@ indent_style = space
 # VSSPELL: Spell checker settings for all files
 vsspell_section_id = 001
 #vsspell_ignored_words_001 = \transform|csharp|Guid|ble|html|htmlx|hunspells|jquery|json|mimetype|nav|plaintext|resheader|Suess|Soll|uuid|xaml|xml
-vsspell_ignored_words_001 = File:IgnoredWords.dic
+vsspell_ignored_words_001 = File:spelling-ignored.dic
 vsspell_dictionary_languages_001 = en-US
 vsspell_exclusion_expressions_001 = [a-z]{2}-([A-Z]{2}|Cyrl|Latn)(?@@PND@@/Options/None)\\\\\w+(?@@PND@@/Options/None)
 

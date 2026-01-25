@@ -1,8 +1,8 @@
 # Lite Event Aggregator and IPC Transporter
 
-<!-- ![Lite.StateMachine Logo](https://raw.githubusercontent.com/SuessLabs/Lite.StateMachine/develop/docs/icon-128x128.png) -->
+<!-- ![Lite.StateMachine Logo](https://raw.githubusercontent.com/SuessLabs/Lite.EventIpc/refs/heads/develop/docs/logo.png) -->
 
-<image align="right" width="200" height="200" src="https://raw.githubusercontent.com/SuessLabs/Lite.StateMachine/develop/docs/icon-128x128.png" />
+<image align="right" width="200" height="200" src="https://raw.githubusercontent.com/SuessLabs/Lite.EventIpc/refs/heads/develop/docs/logo.png" />
 
 Lite.EventIPC is a cross-platform local Event Aggregator and remote IPC (inter-process communication) service library for C#. The pattern is used for decoupling publishers and subscribers in a single or multiple applications. The library can be easily extended for custom IPC transports using the `IEventTransport` interface to suit your needs (_need I say, DBus?_)
 
@@ -12,7 +12,6 @@ The Event Aggregator service in C# pattern is useful for decoupling publishers a
 |-|
 | Copyright 2025-2026 Xeno Innovations, Inc. (_DBA: Suess Labs_) |
 | Created by: Damian Suess |
-
 
 ## Package Releases
 

@@ -2,7 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Lite.EventIpc;
-using Tmds.DBus;
+using Tmds.DBus.Protocol;
 
 namespace Sample.IpcDBus;
 
@@ -21,12 +21,13 @@ public class Subscriber
     });
 
     // Connect to the session bus and start watching the signal.
-    using var connection = new Tmds.DBus.Connection(DbusConstants.Path);
-    //await using var connection = new Tmds.DBus.Connection(DBusAddress.Session!);
+    using var connection = new Tmds.DBus.Connection(Address.Session);
+    ////await using var connection = new Tmds.DBus.Connection(DBusAddress.Session!);
     await connection.ConnectAsync();
 
     // Start a generic watcher for our interface + signal name.
     // This mimics the generated WatchXxxAsync helpers.
+    /*
     await WatchEventPublishedAsync(connection, (eventType, json) =>
     {
       // very basic type map - expand as needed, or include type name in payload
@@ -44,6 +45,7 @@ public class Subscriber
         Console.WriteLine($"[DBUS] Ignoring unknown event type: {eventType}");
       }
     });
+    */
 
     Console.WriteLine("Listening for D‑Bus events… Press <Enter> to exit.");
     Console.ReadLine();
@@ -54,9 +56,12 @@ public class Subscriber
           Action<(string eventType, string json)> handler,
           Action<Exception>? onError = null)
   {
+    throw new NotImplementedException();
+
     // Behind the scenes, Tmds.DBus generated code uses a WatchSignalAsync pattern like:
     // base.WatchSignalAsync(destination, interface, path, member, reader, handler)
     // We’ll implement a small reader for the 'ss' signature (two strings).
+    /*
     return connection.WatchSignalAsync(
         destination: null, // any
         @interface: DbusConstants.Interface,
@@ -73,5 +78,6 @@ public class Subscriber
         handler: handler,
         onError: onError,
         emitOnCapturedContext: true);
+    */
   }
 }

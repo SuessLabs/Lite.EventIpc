@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Tmds.DBus" />
+    <PackageReference Include="Tmds.DBus.Protocol" />
   </ItemGroup>
 
   <ItemGroup>

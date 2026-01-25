@@ -3,7 +3,8 @@
 
 using System.Text.Json;
 using Lite.EventIpc;
-using Tmds.DBus;
+////using Tmds.DBus;
+using Tmds.DBus.Protocol;
 
 namespace Sample.IpcDBus;
 
@@ -17,13 +18,15 @@ public class Publisher
     var aggregator = new EventAggregator();
 
     // 2) DBus connection (session bus is typical for desktop apps)
-    using var connection = new Connection(DbusConstants.Path!);
+    using var connection = new Connection(Address.Session!);
+    //// using var connection = new Connection(DBusAddress.Session!);
     //// await using var connection = new Connection(DBusAddress.Session!);
+
     await connection.ConnectAsync();
 
     // Try to own a well-known name so others can filter on it
     // (Not strictly required to emit signals, but helpful.)
-    await connection.RequestNameAsync(DbusConstants.Service);
+    await connection.RequestNameAsync(Constants.Service);
 
     // 3) Publish locally AND over DBus
     var evt = new UserCreatedEvent { UserName = "Damian" };
@@ -44,15 +47,16 @@ public class Publisher
     using var writer = connection.GetMessageWriter();
     // Signal header: destination(null=broadcast), path, interface, member, signature
     writer.WriteSignalHeader(destination: null,
-                             path: DbusConstants.Path,
-                             @interface: DbusConstants.Interface,
-                             member: DbusConstants.Signal,
+                             path: Constants.Path,
+                             @interface: Constants.Interface,
+                             member: Constants.Signal,
                              signature: "ss"); // two strings
 
     writer.WriteString(eventType);
     writer.WriteString(json);
 
     var message = writer.CreateMessage();
-    await connection.SendMessageAsync(message);
+    connection.TrySendMessage(message);
+    ////await connection.SendMessageAsync(message);
   }
 }

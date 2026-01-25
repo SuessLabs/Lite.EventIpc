@@ -1,7 +1,7 @@
 // Copyright Xeno Innovations, Inc. 2026
 // See the LICENSE file in the project root for more information.
 
-namespace Sample.IpcDBus;
+namespace Sample.IpcDBus.Advanced;
 
 // Choose the bus: Session for user apps, System for machine-wide.
 public static class Constants

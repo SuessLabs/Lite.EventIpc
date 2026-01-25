@@ -3,10 +3,9 @@
 
 using System.Text.Json;
 using Lite.EventIpc;
-////using Tmds.DBus;
 using Tmds.DBus.Protocol;
 
-namespace Sample.IpcDBus;
+namespace Sample.IpcDBus.Advanced;
 
 public class Publisher
 {

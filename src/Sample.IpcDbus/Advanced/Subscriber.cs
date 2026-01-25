@@ -4,7 +4,7 @@
 using Lite.EventIpc;
 using Tmds.DBus.Protocol;
 
-namespace Sample.IpcDBus;
+namespace Sample.IpcDBus.Advanced;
 
 public class Subscriber
 {

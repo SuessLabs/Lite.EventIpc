@@ -178,6 +178,7 @@ public class EventAggregator : IEventAggregator
       : null;
 
     // We know timeout has value here (!)
+    // TODO: Use, cts.Cancel(); on success so we don't throw exceptions
     cts?.CancelAfter(timeout!.Value);
 
     var effectiveCt = cts?.Token ?? cancellationToken;

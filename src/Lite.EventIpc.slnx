@@ -17,6 +17,9 @@
     <File Path="stylecop.json" />
   </Folder>
   <Folder Name="/Test Apps/">
+    <Project Path="Sample.IpcDbus/Sample.IpcDbus.csproj" DisplayName="Sample.IpcDBus" Id="8abba9f3-f64b-488c-9cb9-0dcb0a3e1f54">
+      <BuildType Solution="PREVIEW|*" Project="Release" />
+    </Project>
     <Project Path="SampleApp/SampleApp.csproj" Id="0c7214b2-3dc4-46b2-972b-71ad5c93eafc" />
   </Folder>
   <Folder Name="/Unit Tests/">

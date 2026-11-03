@@ -49,6 +49,8 @@ public class TcpTransportTests : BaseTestClass
     // Give it a moment
     Task.Delay(Timeout50).Wait();
     Assert.IsTrue(msgReceived);
+
+    clientTransport.StopListening();
   }
 
   [TestMethod]

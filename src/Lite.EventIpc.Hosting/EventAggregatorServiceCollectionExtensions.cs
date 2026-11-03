@@ -5,7 +5,7 @@
 using Lite.EventIpc.IpcTransport;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lite.EventIpc.Ioc;
+namespace Lite.EventIpc.Hosting;
 
 public static class EventAggregatorServiceCollectionExtensions
 {

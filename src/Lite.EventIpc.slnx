@@ -22,5 +22,8 @@
   <Folder Name="/Unit Tests/">
     <Project Path="Lite.EventIpc.Tests/Lite.EventIpc.Tests.csproj" Id="64fa2510-d0b7-4118-af16-79c95ee5fd0a" />
   </Folder>
+  <Project Path="Lite.EventIpc.Hosting/Lite.EventIpc.Hosting.csproj" Id="11ee782c-d2b1-44fe-8a74-db1413ad6d59">
+    <BuildType Solution="PREVIEW|*" Project="Release" />
+  </Project>
   <Project Path="Lite.EventIpc/Lite.EventIpc.csproj" />
 </Solution>

@@ -6,14 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <AssemblyVersion>1.3.3</AssemblyVersion>
-    <FileVersion>$(AssemblyVersion)</FileVersion>
-    <VersionPrefix>$(AssemblyVersion)</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
-    <Version>$(VersionPrefix)$(VersionSuffix)</Version>
-  </PropertyGroup>
-  
   <ItemGroup>
     <ProjectReference Include="..\Lite.EventIpc\Lite.EventIpc.csproj" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />

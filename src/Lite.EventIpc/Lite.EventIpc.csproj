@@ -8,14 +8,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <AssemblyVersion>1.3.3</AssemblyVersion>
-    <FileVersion>$(AssemblyVersion)</FileVersion>
-    <VersionPrefix>$(AssemblyVersion)</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
-    <Version>$(VersionPrefix)$(VersionSuffix)</Version>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <!-- NuGet metadata -->
     <Title>Lite.EventIpc</Title>
     <Authors>Damian Suess</Authors>

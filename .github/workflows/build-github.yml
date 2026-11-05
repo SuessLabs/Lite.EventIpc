@@ -34,7 +34,7 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -90,7 +90,12 @@ jobs:
           if-no-files-found: error
 
       - name: Publish to NuGet.org
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: >-
+          (github.event_name == 'push' &&
+           github.ref == 'refs/heads/master') ||
+          (github.event_name == 'pull_request_target' &&
+           github.event.pull_request.merged == true &&
+           github.base_ref == 'develop')
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
         run: dotnet nuget push "$env:PATH_ARTIFACTS/*.nupkg" --api-key $env:NUGET_AUTH_TOKEN --source https://api.nuget.org/v3/index.json

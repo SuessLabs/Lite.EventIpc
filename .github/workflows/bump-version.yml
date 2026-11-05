@@ -78,9 +78,77 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/build-github.yml
-    secrets:
-      NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
     with:
       ref: ${{ needs.bump-version.outputs.sha }}
-      publish: true
       prerelease: ${{ github.event.pull_request.base.ref == 'develop' }}
+
+  publish-nuget:
+    needs: build-bumped-version
+    if: >-
+      github.event.pull_request.merged == true &&
+      (github.base_ref == 'develop' || github.base_ref == 'master')
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PATH_ARTIFACTS: ${{ github.workspace }}/artifacts
+    steps:
+      - name: Check Trusted Publishing configuration
+        env:
+          NUGET_USER: ${{ vars.NUGET_USER }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_USER)) {
+            throw 'Set the NUGET_USER repository Actions variable to your NuGet.org username (not your email address).'
+          }
+
+      - name: Download built packages
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ needs.build-bumped-version.outputs.artifact-name }}
+          path: ${{ env.PATH_ARTIFACTS }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      # Keep OIDC login in this top-level workflow so the NuGet policy matches
+      # bump-version.yml. The build workflow receives no publishing credentials.
+      - name: Authenticate to NuGet.org
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Publish to NuGet.org
+        env:
+          NUGET_AUTH_TOKEN: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_AUTH_TOKEN)) {
+            throw 'Trusted Publishing did not return an API key. Check the Authenticate to NuGet.org step and the NuGet.org policy for bump-version.yml.'
+          }
+          # Resolve files in PowerShell: NuGet's wildcard matching fails on
+          # Windows paths mixing backslashes with the workflow's forward slashes.
+          $packages = @(Get-ChildItem -LiteralPath $env:PATH_ARTIFACTS -Filter '*.nupkg' -File)
+          if ($packages.Count -eq 0) {
+            throw "No NuGet packages were found in $env:PATH_ARTIFACTS. Check the Pack NuGet step."
+          }
+          foreach ($package in $packages) {
+            Write-Host "Publishing $($package.Name) to NuGet.org"
+            $pushOutput = dotnet nuget push $package.FullName --api-key $env:NUGET_AUTH_TOKEN --source https://api.nuget.org/v3/index.json --skip-duplicate --force-english-output 2>&1
+            $pushExitCode = $LASTEXITCODE
+            $message = ($pushOutput | Out-String).Replace($env:NUGET_AUTH_TOKEN, '***')
+            Write-Host $message
+            if ($pushExitCode -ne 0) {
+              if ($message -match '\b(401|403)\b|Unauthorized|Forbidden') {
+                throw "NuGet.org rejected the credentials for $($package.Name). Check the NuGet Trusted Publishing policy owner and Push scope for Lite.EventIpc, then rerun the failed publishing job to request a fresh temporary key."
+              }
+              throw "NuGet publish failed for $($package.Name) with exit code $pushExitCode. See the NuGet output above for the server error."
+            }
+          }

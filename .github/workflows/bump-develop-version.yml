@@ -1,0 +1,79 @@
+name: Bump develop patch version
+
+on:
+  # The base-branch workflow handles merged PRs, including PRs from forks.
+  pull_request_target:
+    branches: [ develop ]
+    types: [ closed ]
+
+permissions:
+  contents: read
+
+jobs:
+  bump-version:
+    if: github.event.pull_request.merged == true
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.bump.outputs.sha }}
+    steps:
+      # Only check out the trusted base branch after merge, never the PR head.
+      - name: Checkout develop
+        uses: actions/checkout@v5
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Increment and commit patch version
+        id: bump
+        shell: pwsh
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          $marker = "chore: bump patch version after PR #$env:PR_NUMBER [auto-version]"
+
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            git fetch origin develop
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to fetch develop.' }
+
+            # A rerun must not increment the version a second time.
+            $existing = git log origin/develop --format=%H --fixed-strings --grep="$marker" -1
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to check version-bump history.' }
+            if ($existing) {
+              "sha=$existing" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              exit 0
+            }
+
+            # Recompute from the latest branch on each retry. This reset only
+            # affects the disposable Actions checkout, never a developer's files.
+            git reset --hard origin/develop
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to reset the Actions checkout.' }
+            $version = & ./.github/scripts/Bump-PatchVersion.ps1
+            git add -- src/Lite.EventIpc/Lite.EventIpc.csproj src/Lite.EventIpc.Hosting/Lite.EventIpc.Hosting.csproj
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to stage the version bump.' }
+            git commit -m "$marker" -m "Version: $version"
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to commit the version bump.' }
+
+            git push origin HEAD:develop
+            if ($LASTEXITCODE -eq 0) {
+              $sha = git rev-parse HEAD
+              if ($LASTEXITCODE -ne 0) { throw 'Failed to read the bump commit SHA.' }
+              "sha=$sha" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              exit 0
+            }
+            Write-Host "Push failed on attempt $attempt; retrying against the latest develop."
+          }
+
+          throw 'Could not push the version bump. Check develop branch protection and Actions write permissions, then rerun this workflow.'
+
+  build-bumped-version:
+    needs: bump-version
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build-github.yml
+    with:
+      ref: ${{ needs.bump-version.outputs.sha }}

@@ -1,36 +1,53 @@
-# Build versioning
+# Versioning and NuGet publishing
 
-Merging a pull request into `develop` runs `bump-develop-version.yml`. It increments
-the patch component of `AssemblyVersion` in both library projects and commits the
-change to `develop` using `github-actions[bot]`. For example, `1.3.0` becomes
-`1.3.1`; the existing file and package version properties inherit that change.
-Closing a PR without merging does not increment the version.
+Every merged pull request into `develop` or `master` runs `bump-version.yml`.
+An open PR only runs build validation. Closing a PR without merging does not
+change the version or publish a package. Direct branch pushes also only validate.
 
-Rerunning a workflow finds the existing bump commit for that PR instead of
-incrementing again. If another merge advances `develop` during the bump, the
-workflow fetches the latest branch, recalculates the version, and retries the
-push up to three times without force pushing.
+Both library projects store the same four-part `AssemblyVersion`:
+`Major.Minor.Patch.Build`. FileVersion and Version inherit that value.
 
-The workflow then calls `build-github.yml` with the bump commit's SHA to build,
-test, and upload packages. This explicit call is necessary because pushes made
-with `GITHUB_TOKEN` do not trigger another push workflow. See
-[GitHub's token documentation](https://docs.github.com/en/actions/concepts/security/github_token).
+| PR merged into | Version before | Committed version | NuGet package version |
+| --- | --- | --- | --- |
+| `develop` | `1.3.3.0` | `1.3.3.1` | `1.3.3.1-pre` |
+| `develop` again | `1.3.3.1` | `1.3.3.2` | `1.3.3.2-pre` |
+| `master` | `1.3.3.2` | `1.4.0.0` | `1.4.0` (normalized) |
 
-Package versions are based on the project version:
+The develop increment preserves Major, Minor, and Patch. The master increment
+resets Patch and Build to zero. Patch and Major can be changed manually when
+needed. After a release, merge master back into develop to carry the new Minor
+version into subsequent prereleases.
 
-| Build | Example package version |
-| --- | --- |
-| PR validation | `1.3.0-alpha.123` |
-| `develop` merge, after the committed bump | `1.3.1-beta.124` |
-| `master` push | `1.3.1` |
+The workflow displays versions with a `v` prefix (for example, `v1.3.3.2-pre`).
+The prefix is omitted from NuGet package metadata. NuGet supports four-part
+versions but normalizes a fourth component of zero away; `1.4.0.0` and `1.4.0`
+identify the same package version. See
+[NuGet version normalization](https://learn.microsoft.com/en-us/nuget/concepts/package-versioning#normalized-version-numbers).
 
-The final number in prerelease versions is the workflow run number. Versions are
-passed to both build and pack so the assembly metadata and NuGet package agree.
-Only pushes to `master` publish to NuGet.org, using `NUGET_AUTH_TOKEN`.
+The version change is committed back to the target branch by
+`github-actions[bot]`. Reruns find the existing commit for that PR instead of
+incrementing again. Simultaneous merges retry against the latest target branch
+without force pushing. The build workflow is explicitly called with the bump
+commit SHA, since pushes using `GITHUB_TOKEN` do not trigger push workflows.
 
-The bump job requests `contents: write`. Repository policy and branch protection
-must allow the Actions bot to push to `develop`; otherwise that job fails with an
-instruction to check permissions and rerun. This configuration does not change
-repository settings or bypass branch protection. Ensure these workflow files
-are available on the default branch as well as `develop` for the
-[`pull_request_target` trigger](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request_target).
+The called workflow builds and tests that commit before packaging and publishing.
+Rerunning a publish skips versions that are already on NuGet.org. This publishes
+the `Lite.EventIpc` package; the hosting library remains a project dependency
+without its own NuGet package configuration.
+
+## GitHub setup
+
+1. Merge these workflows into the default branch and both target branches. Remove
+   the old `bump-develop-version.yml` workflow so it cannot also increment versions.
+2. Add or update the repository Actions secret `NUGET_AUTH_TOKEN` with a NuGet.org
+   API key scoped to Push for `Lite.EventIpc`.
+3. Allow the Actions bot to push version commits to both `develop` and `master`.
+   The bump job requests `contents: write`, but repository rules can still reject
+   the push. No repository settings or protection rules are changed by these files.
+4. Merge a PR into develop and inspect **Version and publish merged PR**. Expect
+   one version commit and a package ending in `-pre`.
+5. Merge a PR into master. Expect a Minor increment and a stable package.
+
+The merged-PR workflow checks out only the trusted target branch after a merge,
+never an unmerged PR head. The publishing job receives the NuGet secret through
+`secrets: inherit`; ordinary PR validation does not publish.

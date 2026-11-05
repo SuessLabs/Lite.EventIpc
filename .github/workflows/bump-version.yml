@@ -1,9 +1,9 @@
-name: Bump develop patch version
+name: Version and publish merged PR
 
 on:
   # The base-branch workflow handles merged PRs, including PRs from forks.
   pull_request_target:
-    branches: [ develop ]
+    branches: [ develop, master ]
     types: [ closed ]
 
 permissions:
@@ -19,29 +19,32 @@ jobs:
       sha: ${{ steps.bump.outputs.sha }}
     steps:
       # Only check out the trusted base branch after merge, never the PR head.
-      - name: Checkout develop
+      - name: Checkout merged branch
         uses: actions/checkout@v5
         with:
-          ref: develop
+          ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 0
 
-      - name: Increment and commit patch version
+      - name: Increment and commit version
         id: bump
         shell: pwsh
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
         run: |
           $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
+          if ($env:TARGET_BRANCH -notin @('develop', 'master')) { throw 'Unexpected target branch.' }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          $marker = "chore: bump patch version after PR #$env:PR_NUMBER [auto-version]"
+          $marker = "chore: bump $env:TARGET_BRANCH version after PR #$env:PR_NUMBER [auto-version]"
 
           for ($attempt = 1; $attempt -le 3; $attempt++) {
-            git fetch origin develop
-            if ($LASTEXITCODE -ne 0) { throw 'Failed to fetch develop.' }
+            git fetch origin $env:TARGET_BRANCH
+            if ($LASTEXITCODE -ne 0) { throw "Failed to fetch $env:TARGET_BRANCH." }
 
             # A rerun must not increment the version a second time.
-            $existing = git log origin/develop --format=%H --fixed-strings --grep="$marker" -1
+            $existing = git log "origin/$env:TARGET_BRANCH" --format=%H --fixed-strings --grep="$marker" -1
             if ($LASTEXITCODE -ne 0) { throw 'Failed to check version-bump history.' }
             if ($existing) {
               "sha=$existing" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
@@ -50,25 +53,25 @@ jobs:
 
             # Recompute from the latest branch on each retry. This reset only
             # affects the disposable Actions checkout, never a developer's files.
-            git reset --hard origin/develop
+            git reset --hard "origin/$env:TARGET_BRANCH"
             if ($LASTEXITCODE -ne 0) { throw 'Failed to reset the Actions checkout.' }
-            $version = & ./.github/scripts/Bump-PatchVersion.ps1
+            $version = & ./.github/scripts/Bump-Version.ps1 -Branch $env:TARGET_BRANCH
             git add -- src/Lite.EventIpc/Lite.EventIpc.csproj src/Lite.EventIpc.Hosting/Lite.EventIpc.Hosting.csproj
             if ($LASTEXITCODE -ne 0) { throw 'Failed to stage the version bump.' }
             git commit -m "$marker" -m "Version: $version"
             if ($LASTEXITCODE -ne 0) { throw 'Failed to commit the version bump.' }
 
-            git push origin HEAD:develop
+            git push origin "HEAD:$env:TARGET_BRANCH"
             if ($LASTEXITCODE -eq 0) {
               $sha = git rev-parse HEAD
               if ($LASTEXITCODE -ne 0) { throw 'Failed to read the bump commit SHA.' }
               "sha=$sha" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
               exit 0
             }
-            Write-Host "Push failed on attempt $attempt; retrying against the latest develop."
+            Write-Host "Push failed on attempt $attempt; retrying against the latest $env:TARGET_BRANCH."
           }
 
-          throw 'Could not push the version bump. Check develop branch protection and Actions write permissions, then rerun this workflow.'
+          throw 'Could not push the version bump. Check target branch protection and Actions write permissions, then rerun this workflow.'
 
   build-bumped-version:
     needs: bump-version
@@ -78,3 +81,5 @@ jobs:
     secrets: inherit
     with:
       ref: ${{ needs.bump-version.outputs.sha }}
+      publish: true
+      prerelease: ${{ github.event.pull_request.base.ref == 'develop' }}

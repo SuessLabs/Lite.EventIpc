@@ -4,9 +4,17 @@ on:
   workflow_call:
     inputs:
       ref:
-        description: Commit to build after the develop version bump
+        description: Commit to build after the version bump
         required: true
         type: string
+      publish:
+        description: Publish packages after a merged PR version bump
+        default: false
+        type: boolean
+      prerelease:
+        description: Append the -pre suffix to the package version
+        default: false
+        type: boolean
   push:
     branches: [ master, develop ]
   pull_request:
@@ -41,32 +49,27 @@ jobs:
       - name: Determine version
         env:
           EVENT_NAME: ${{ github.event_name }}
-          EVENT_ACTION: ${{ github.event.action }}
           BASE_BRANCH: ${{ github.base_ref }}
           REF_NAME: ${{ github.ref_name }}
+          PRERELEASE: ${{ inputs.prerelease }}
         run: |
           $ErrorActionPreference = 'Stop'
           $baseVersion = dotnet msbuild $env:PATH_LIB -getProperty:Version -nologo
           if ($LASTEXITCODE -ne 0) { throw 'Failed to read the project version.' }
           $baseVersion = "$baseVersion".Trim()
-          if ($baseVersion -notmatch '^\d+\.\d+\.\d+$') {
-            throw "Expected a major.minor.patch project version; got '$baseVersion'."
+          if ($baseVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+            throw "Expected a major.minor.patch.build project version; got '$baseVersion'."
           }
 
-          if ($env:EVENT_NAME -eq 'push' -and $env:REF_NAME -eq 'master') {
-            $version = $baseVersion
-          }
-          elseif (($env:EVENT_NAME -eq 'push' -and $env:REF_NAME -eq 'develop') -or
-                  ($env:EVENT_NAME -eq 'pull_request_target' -and
-                   $env:EVENT_ACTION -eq 'closed' -and $env:BASE_BRANCH -eq 'develop')) {
-            $version = "$baseVersion-beta.$env:GITHUB_RUN_NUMBER"
-          }
-          else {
-            $version = "$baseVersion-alpha.$env:GITHUB_RUN_NUMBER"
+          $version = $baseVersion
+          if ($env:PRERELEASE -eq 'true' -or
+              ($env:EVENT_NAME -eq 'push' -and $env:REF_NAME -eq 'develop') -or
+              ($env:EVENT_NAME -eq 'pull_request' -and $env:BASE_BRANCH -eq 'develop')) {
+            $version = "$baseVersion-pre"
           }
 
           "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          Write-Host "Building version $version"
+          Write-Host "Building v$version"
 
       - name: Restore dependencies
         run: dotnet restore $env:PATH_SLNX
@@ -91,11 +94,15 @@ jobs:
 
       - name: Publish to NuGet.org
         if: >-
-          (github.event_name == 'push' &&
-           github.ref == 'refs/heads/master') ||
-          (github.event_name == 'pull_request_target' &&
-           github.event.pull_request.merged == true &&
-           github.base_ref == 'develop')
+          inputs.publish == true &&
+          github.event_name == 'pull_request_target' &&
+          github.event.action == 'closed' &&
+          github.event.pull_request.merged == true &&
+          (github.base_ref == 'develop' || github.base_ref == 'master')
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
-        run: dotnet nuget push "$env:PATH_ARTIFACTS/*.nupkg" --api-key $env:NUGET_AUTH_TOKEN --source https://api.nuget.org/v3/index.json
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_AUTH_TOKEN)) {
+            throw 'Set the NUGET_AUTH_TOKEN repository secret to a NuGet.org API key with Push permission.'
+          }
+          dotnet nuget push "$env:PATH_ARTIFACTS/*.nupkg" --api-key $env:NUGET_AUTH_TOKEN --source https://api.nuget.org/v3/index.json --skip-duplicate

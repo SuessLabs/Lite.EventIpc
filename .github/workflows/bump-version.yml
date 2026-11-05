@@ -56,7 +56,7 @@ jobs:
             git reset --hard "origin/$env:TARGET_BRANCH"
             if ($LASTEXITCODE -ne 0) { throw 'Failed to reset the Actions checkout.' }
             $version = & ./.github/scripts/Bump-Version.ps1 -Branch $env:TARGET_BRANCH
-            git add -- src/Lite.EventIpc/Lite.EventIpc.csproj src/Lite.EventIpc.Hosting/Lite.EventIpc.Hosting.csproj
+            git add -- src/Directory.Build.props
             if ($LASTEXITCODE -ne 0) { throw 'Failed to stage the version bump.' }
             git commit -m "$marker" -m "Version: $version"
             if ($LASTEXITCODE -ne 0) { throw 'Failed to commit the version bump.' }

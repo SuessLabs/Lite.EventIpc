@@ -8,32 +8,15 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$projectPaths = @(
-  'src/Lite.EventIpc/Lite.EventIpc.csproj'
-  'src/Lite.EventIpc.Hosting/Lite.EventIpc.Hosting.csproj'
-)
-
-# Validate both projects before modifying either file.
-$projects = foreach ($relativePath in $projectPaths)
+$path = Join-Path $RepositoryRoot 'src/Directory.Build.props'
+$content = [System.IO.File]::ReadAllText($path)
+$versionMatches = [regex]::Matches($content, '<AssemblyVersion>(\d+)\.(\d+)\.(\d+)\.(\d+)</AssemblyVersion>')
+if ($versionMatches.Count -ne 1)
 {
-  $path = Join-Path $RepositoryRoot $relativePath
-  $content = [System.IO.File]::ReadAllText($path)
-  $matches = [regex]::Matches($content, '<AssemblyVersion>(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?</AssemblyVersion>')
-  if ($matches.Count -ne 1)
-  {
-    throw "Expected exactly one major.minor.patch[.build] AssemblyVersion in $relativePath."
-  }
-
-  [pscustomobject]@{ Path = $path; Content = $content; Match = $matches[0] }
+  throw 'Expected exactly one major.minor.patch.build AssemblyVersion in src/Directory.Build.props.'
 }
 
-$currentVersion = $projects[0].Match.Value
-if ($projects[1].Match.Value -ne $currentVersion)
-{
-  throw 'The library project versions must match before incrementing the version.'
-}
-
-$versionMatch = $projects[0].Match
+$versionMatch = $versionMatches[0]
 $major = [int]$versionMatch.Groups[1].Value
 $minor = [int]$versionMatch.Groups[2].Value
 $patch = [int]$versionMatch.Groups[3].Value
@@ -60,10 +43,7 @@ foreach ($component in @($major, $minor, $patch, $build))
 }
 $nextVersion = '{0}.{1}.{2}.{3}' -f $major, $minor, $patch, $build
 
-foreach ($project in $projects)
-{
-  $content = $project.Content.Replace($project.Match.Value, "<AssemblyVersion>$nextVersion</AssemblyVersion>")
-  [System.IO.File]::WriteAllText($project.Path, $content, [System.Text.UTF8Encoding]::new($false))
-}
+$content = $content.Replace($versionMatch.Value, "<AssemblyVersion>$nextVersion</AssemblyVersion>")
+[System.IO.File]::WriteAllText($path, $content, [System.Text.UTF8Encoding]::new($false))
 
 Write-Output $nextVersion

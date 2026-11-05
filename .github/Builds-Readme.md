@@ -4,8 +4,10 @@ Every merged pull request into `develop` or `master` runs `bump-version.yml`.
 An open PR only runs build validation. Closing a PR without merging does not
 change the version or publish a package. Direct branch pushes also only validate.
 
-Both library projects store the same four-part `AssemblyVersion`:
-`Major.Minor.Patch.Build`. FileVersion and Version inherit that value.
+`src/Directory.Build.props` stores the shared four-part `AssemblyVersion`:
+`Major.Minor.Patch.Build`. Both library projects inherit it, along with FileVersion
+and Version. Change the version in this file only; the project files contain no
+version overrides. The automated bump commits only `src/Directory.Build.props`.
 
 | PR merged into | Version before | Committed version | NuGet package version |
 | --- | --- | --- | --- |

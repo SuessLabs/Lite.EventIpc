@@ -78,7 +78,8 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/build-github.yml
-    secrets: inherit
+    secrets:
+      NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
     with:
       ref: ${{ needs.bump-version.outputs.sha }}
       publish: true

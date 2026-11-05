@@ -52,4 +52,21 @@ without its own NuGet package configuration.
 
 The merged-PR workflow checks out only the trusted target branch after a merge,
 never an unmerged PR head. The publishing job receives the NuGet secret through
-`secrets: inherit`; ordinary PR validation does not publish.
+an explicit `NUGET_AUTH_TOKEN` secret mapping; ordinary PR validation does not publish.
+
+## Publish failures
+
+If NuGet reports `File does not exist (.../artifacts/*.nupkg)` despite successful
+packing, check for mixed Windows path separators in the wildcard argument. The
+publish step resolves packages with PowerShell `Get-ChildItem` and passes each
+file's full path to NuGet, avoiding this wildcard-matching failure.
+
+The publish step checks that the secret and packages exist, then prints NuGet's
+response with the key redacted. If NuGet returns 401 or 403, update the repository
+Actions secret `NUGET_AUTH_TOKEN` with an unexpired NuGet.org API key that has Push
+permission for `Lite.EventIpc`. The key's owner must have publishing rights to
+that package. A GitHub personal access token is not a NuGet.org API key.
+
+For other failures, inspect the NuGet server response in **Publish to NuGet.org**.
+After changing only the secret, rerun failed jobs. Workflow code changes require
+a new run using the updated workflow; rerunning an old run uses its original code.

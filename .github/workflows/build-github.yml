@@ -1,4 +1,4 @@
-name: Build, Test, Pack, and Publish
+name: Build, Test, and Pack
 
 on:
   workflow_call:
@@ -7,18 +7,14 @@ on:
         description: Commit to build after the version bump
         required: true
         type: string
-      publish:
-        description: Publish packages after a merged PR version bump
-        default: false
-        type: boolean
       prerelease:
         description: Append the -pre suffix to the package version
         default: false
         type: boolean
-    secrets:
-      NUGET_AUTH_TOKEN:
-        description: NuGet.org API key with Push permission for Lite.EventIpc
-        required: false
+    outputs:
+      artifact-name:
+        description: Artifact containing the built NuGet packages
+        value: ${{ jobs.build-test-pack.outputs.artifact-name }}
   push:
     branches: [ master, develop ]
   pull_request:
@@ -35,6 +31,8 @@ env:
 jobs:
   build-test-pack:
     runs-on: windows-latest
+    outputs:
+      artifact-name: ${{ steps.version.outputs.artifact-name }}
     defaults:
       run:
         shell: pwsh
@@ -51,6 +49,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Determine version
+        id: version
         env:
           EVENT_NAME: ${{ github.event_name }}
           BASE_BRANCH: ${{ github.base_ref }}
@@ -73,6 +72,7 @@ jobs:
           }
 
           "PACKAGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "artifact-name=packages-$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           Write-Host "Building v$version"
 
       - name: Restore dependencies
@@ -90,43 +90,8 @@ jobs:
       - name: Upload packages
         uses: actions/upload-artifact@v6
         with:
-          name: packages-${{ env.PACKAGE_VERSION }}
+          name: ${{ steps.version.outputs.artifact-name }}
           path: |
             artifacts/*.nupkg
             artifacts/*.snupkg
           if-no-files-found: error
-
-      - name: Publish to NuGet.org
-        if: >-
-          inputs.publish == true &&
-          github.event_name == 'pull_request_target' &&
-          github.event.action == 'closed' &&
-          github.event.pull_request.merged == true &&
-          (github.base_ref == 'develop' || github.base_ref == 'master')
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $PSNativeCommandUseErrorActionPreference = $false
-          if ([string]::IsNullOrWhiteSpace($env:NUGET_AUTH_TOKEN)) {
-            throw 'NUGET_AUTH_TOKEN is missing. Update the repository Actions secret and pass it to the reusable workflow.'
-          }
-          # Resolve files in PowerShell: NuGet's wildcard matching fails on
-          # Windows paths mixing backslashes with the workflow's forward slashes.
-          $packages = @(Get-ChildItem -LiteralPath $env:PATH_ARTIFACTS -Filter '*.nupkg' -File)
-          if ($packages.Count -eq 0) {
-            throw "No NuGet packages were found in $env:PATH_ARTIFACTS. Check the Pack NuGet step."
-          }
-          foreach ($package in $packages) {
-            Write-Host "Publishing $($package.Name) to NuGet.org"
-            $pushOutput = dotnet nuget push $package.FullName --api-key $env:NUGET_AUTH_TOKEN --source https://api.nuget.org/v3/index.json --skip-duplicate --force-english-output 2>&1
-            $pushExitCode = $LASTEXITCODE
-            $message = ($pushOutput | Out-String).Replace($env:NUGET_AUTH_TOKEN, '***')
-            Write-Host $message
-            if ($pushExitCode -ne 0) {
-              if ($message -match '\b(401|403)\b|Unauthorized|Forbidden') {
-                throw "NuGet.org rejected the credentials for $($package.Name). Replace NUGET_AUTH_TOKEN with an unexpired NuGet.org API key scoped to Push for Lite.EventIpc, owned by an account allowed to publish that package."
-              }
-              throw "NuGet publish failed for $($package.Name) with exit code $pushExitCode. See the NuGet output above for the server error."
-            }
-          }

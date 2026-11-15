@@ -120,6 +120,17 @@ public async Task SubscribeWithResponse()
 }
 ```
 
+## Coming Soon
+
+`Lite.EventIpc.Hosting` is used to integrate the event aggregator with ASP.NET Core, worker services, and .NET's Generic Host.
+
+It provides:
+* `AddEventAggregator()` - Registers the event aggregator as a singleton in dependency injection.
+* `UseEventTransport<TTransport>()` - Registers an IPC transport and a hosted service.
+* A hosted service that connects the transport when the application starts.
+
+Keeping this separate lets applications use the core library without taking a dependency on Microsoft's hosting framework.
+
 ## Architecture
 
 ### Why Weak References

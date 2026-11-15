@@ -89,3 +89,4 @@ TestResult.xml
 /[Dd]ocs/*.csv
 /[Dd]ocs/backup
 /[Tt]ools
+/[Ss]andbox

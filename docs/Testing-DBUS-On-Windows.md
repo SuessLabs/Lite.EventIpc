@@ -34,10 +34,10 @@ See [Install .NET on Ubuntu 24.04](https://learn.microsoft.com/en-us/dotnet/core
 ## 3. Build the sample using Linux .NET
 
 The following commands assume the repository is at
-`C:\dev\labs\SuessLabs.Lite.EventIpc`. Adjust the path if needed.
+`C:\dev\SuessLabs.Lite.EventIpc`. Adjust the path if needed.
 
 ```bash
-cd /mnt/c/dev/labs/SuessLabs.Lite.EventIpc
+cd /mnt/c/dev/SuessLabs.Lite.EventIpc
 dotnet build src/Sample.IpcDbus/Sample.IpcDBus.csproj
 ```
 
